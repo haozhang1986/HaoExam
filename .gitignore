@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Database
+# *.db
+# *.sqlite3
+
+# Uploads (optional, but usually we don't commit large uploads)
+# backend/static/uploads/
+# Keeping uploads for now as it's a small personal project, or uncomment above to ignore.
+
+# OS
+.DS_Store
+Thumbs.db

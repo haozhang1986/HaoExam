@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HaoExam Question Bank</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="mobile-menu-btn" id="mobile-menu-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </div>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <div class="app-container">
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <img src="haoexam_logo_fixed.png" alt="HaoExam Logo" style="height: 80px;">
+            </div>
+
+            <nav class="main-nav">
+                <button id="nav-gallery" class="nav-item active">
+                    Question Bank
+                </button>
+                <button id="nav-upload" class="nav-item">
+                    Upload New
+                </button>
+                <button id="nav-manage" class="nav-item">
+                    Management
+                </button>
+            </nav>
+
+            <div class="filters-section">
+                <!-- Filters Header Removed -->
+                <div class="filter-group">
+                    <label>Curriculum</label>
+                    <select id="filter-curriculum">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Subject</label>
+                    <select id="filter-subject">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Month</label>
+                    <select id="filter-month">
+                        <option value="">All</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Topic</label>
+                    <select id="filter-tag-category">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sub-topic</label>
+                    <select id="filter-tag-name">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Difficulty</label>
+                    <select id="filter-difficulty">
+                        <option value="">All</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+                <button id="btn-show-questions" class="btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                    Show Questions
+                </button>
+            </div>
+
+            <div class="basket-section">
+                <h3>Basket (<span id="basket-count">0</span>)</h3>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <input type="checkbox" id="chk-include-answers">
+                    <label for="chk-include-answers" style="font-size: 0.875rem; white-space: nowrap;">Include
+                        Answers</label>
+                </div>
+                <button id="btn-generate-pdf" class="btn-primary" disabled style="width: 100%;">
+                    Generate PDF
+                </button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Gallery View -->
+            <div id="view-gallery" class="view active">
+                <div class="view-header">
+                    <h2>Question Bank</h2>
+                    <!-- Search bar removed -->
+                </div>
+                <div id="gallery-grid" class="gallery-grid">
+                    <!-- Questions will be loaded here -->
+                    <div class="loading-state">Select filters and click "Show Questions" to begin.</div>
+                </div>
+            </div>
+
+            <!-- Upload View -->
+            <div id="view-upload" class="view">
+                <div class="view-header">
+                    <h2>Upload New Question</h2>
+                </div>
+                <div class="upload-container">
+                    <div class="upload-split">
+                        <!-- Question Image Upload -->
+                        <div class="upload-box" id="upload-box-q" tabindex="0">
+                            <div class="placeholder">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
+                                <div>Paste Question Image Here</div>
+                                <div style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af;">(Ctrl+V)</div>
+                            </div>
+                            <button class="btn-clear" id="clear-q" hidden>×</button>
+                            <!-- Images will be appended here -->
+                        </div>
+
+                        <!-- Answer Image Upload -->
+                        <div class="upload-box" id="upload-box-a" tabindex="0">
+                            <div class="placeholder">
+                                <div style="font-size: 3rem; margin-bottom: 1rem;">💡</div>
+                                <div>Paste Answer Image Here</div>
+                                <div style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af;">(Ctrl+V)</div>
+                            </div>
+                            <button class="btn-clear" id="clear-a" hidden>×</button>
+                            <!-- Images will be appended here -->
+                        </div>
+                    </div>
+
+                    <div class="upload-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Curriculum</label>
+                                <select id="input-curriculum">
+                                    <option value="A-Level">A-Level</option>
+                                    <option value="IGCSE">IGCSE</option>
+                                    <option value="AP">AP</option>
+                                    <option value="IB">IB</option>
+                                    <option value="__new__">+ Create New</option>
+                                </select>
+                                <input type="text" id="new-curriculum" placeholder="Enter Curriculum Name" hidden>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select id="input-subject">
+                                    <option value="Math">Math</option>
+                                    <option value="Physics">Physics</option>
+                                    <option value="Chemistry">Chemistry</option>
+                                    <option value="Biology">Biology</option>
+                                    <option value="Economics">Economics</option>
+                                    <option value="__new__">+ Create New</option>
+                                </select>
+                                <input type="text" id="new-subject" placeholder="Enter Subject Name" hidden>
+                            </div>
+                            <div class="form-group">
+                                <label>Year</label>
+                                <input type="number" id="input-year" value="2024">
+                            </div>
+                            <div class="form-group">
+                                <label>Month</label>
+                                <select id="input-month">
+                                    <option value="">None</option>
+                                    <option value="January">January</option>
+                                    <option value="February">February</option>
+                                    <option value="March">March</option>
+                                    <option value="April">April</option>
+                                    <option value="May">May</option>
+                                    <option value="June">June</option>
+                                    <option value="July">July</option>
+                                    <option value="August">August</option>
+                                    <option value="September">September</option>
+                                    <option value="October">October</option>
+                                    <option value="November">November</option>
+                                    <option value="December">December</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Difficulty</label>
+                                <select id="input-difficulty">
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Question No.</label>
+                                <input type="text" id="input-qno" placeholder="e.g. 1(a)">
+                            </div>
+                            <div class="form-group">
+                                <label>Topic (Category)</label>
+                                <select id="input-tag-category">
+                                    <option value="">Select or Type...</option>
+                                </select>
+                                <input type="text" id="new-tag-category" placeholder="New Topic" hidden>
+                            </div>
+                            <div class="form-group">
+                                <label>Sub-topic (Name)</label>
+                                <select id="input-tag-name">
+                                    <option value="">Select or Type...</option>
+                                </select>
+                                <input type="text" id="new-tag-name" placeholder="New Sub-topic" hidden>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem; text-align: right;">
+                            <button id="btn-submit-upload" class="btn-primary">Save Question</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unified Manage View -->
+            <div id="view-manage" class="view">
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Management</h2>
+                    <div class="tab-nav">
+                        <button id="tab-questions" class="tab-btn active">Questions</button>
+                        <button id="tab-tags" class="tab-btn">Tags</button>
+                    </div>
+                </div>
+
+                <!-- Questions Tab Content -->
+                <div id="content-questions" class="tab-content active">
+                    <div class="manage-container">
+                        <table class="manage-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Image</th>
+                                    <th>Details</th>
+                                    <th>Tags</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="manage-grid">
+                                <!-- Questions will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tags Tab Content -->
+                <div id="content-tags" class="tab-content">
+                    <div class="manage-container">
+                        <table class="manage-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category (Topic)</th>
+                                    <th>Name (Sub-topic)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tags-grid">
+                                <!-- Tags will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Tag Modal -->
+            <div id="modal-edit-tag" class="overlay" hidden>
+                <div style="background: white; padding: 2rem; border-radius: 1rem; width: 400px; text-align: left;">
+                    <h3 style="margin-bottom: 1.5rem;">Edit Tag</h3>
+                    <input type="hidden" id="edit-tag-id">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Category (Topic)</label>
+                        <input type="text" id="edit-tag-category" style="width: 100%;">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Name (Sub-topic)</label>
+                        <input type="text" id="edit-tag-name" style="width: 100%;">
+                    </div>
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <button id="btn-cancel-tag" class="nav-item"
+                            style="border: 1px solid var(--border);">Cancel</button>
+                        <button id="btn-save-tag" class="btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Question Modal -->
+            <div id="modal-edit-question" class="overlay" hidden>
+                <div
+                    style="background: white; padding: 2rem; border-radius: 1rem; width: 600px; text-align: left; max-height: 90vh; overflow-y: auto;">
+                    <h3 style="margin-bottom: 1.5rem;">Edit Question</h3>
+                    <input type="hidden" id="edit-question-id">
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Curriculum</label>
+                            <select id="edit-curriculum">
+                                <option value="A-Level">A-Level</option>
+                                <option value="IGCSE">IGCSE</option>
+                                <option value="AP">AP</option>
+                                <option value="IB">IB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <select id="edit-subject">
+                                <option value="Math">Math</option>
+                                <option value="Physics">Physics</option>
+                                <option value="Chemistry">Chemistry</option>
+                                <option value="Biology">Biology</option>
+                                <option value="Economics">Economics</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Year</label>
+                            <input type="number" id="edit-year">
+                        </div>
+                        <div class="form-group">
+                            <label>Month</label>
+                            <select id="edit-month">
+                                <option value="">None</option>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Difficulty</label>
+                            <select id="edit-difficulty">
+                                <option value="Easy">Easy</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Question No.</label>
+                            <input type="text" id="edit-qno">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
+                        <button id="btn-cancel-question" class="nav-item"
+                            style="border: 1px solid var(--border);">Cancel</button>
+                        <button id="btn-save-question" class="btn-primary">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" hidden>
+        <div style="background: white; padding: 3rem; border-radius: 1rem;">
+            <div class="overlay-icon">✅</div>
+            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Upload Successful!</h3>
+            <p style="color: var(--text-muted);">The question has been added to the bank.</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
