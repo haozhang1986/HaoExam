@@ -278,69 +278,109 @@ btnGeneratePdf.addEventListener('click', async () => {
         alert('Error generating PDF');
     } finally {
         btnGeneratePdf.disabled = false;
-        btnGeneratePdf.textContent = 'Generate PDF';
+            btnGeneratePdf.textContent = 'Generate PDF';
     }
 });
 
 // --- Upload Logic ---
-// Image Paste Handling
-function handlePaste(e, previewContainerId, clearBtnId) {
-    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-    const container = document.getElementById(previewContainerId);
-    const clearBtn = document.getElementById(clearBtnId);
 
-    for (const item of items) {
-        if (item.type.indexOf('image') === 0) {
-            const blob = item.getAsFile();
-            const reader = new FileReader();
+// State to store files
+let questionFiles = [];
+let answerFiles = [];
 
-            reader.onload = function (event) {
-                const imgContainer = document.createElement('div');
-                imgContainer.className = 'preview-img-container';
-
-                const img = document.createElement('img');
-                img.src = event.target.result;
-                img.className = 'preview-img';
-
-                imgContainer.appendChild(img);
-
-                // Insert before the placeholder (which is the first child usually, or we append)
-                // Actually, we want to append to the container but keep placeholder at bottom? 
-                // CSS handles placeholder position. Let's just append.
-                container.appendChild(imgContainer);
-
-                // Hide placeholder text if needed, or just let it sit there.
-                // Better: Hide placeholder content if images exist?
-                // For now, just append.
-
-                clearBtn.hidden = false;
-            };
-
-            reader.readAsDataURL(blob);
-        }
+// Helper: Add file to state and preview
+function addFile(file, type) {
+    if (type === 'q') {
+        questionFiles.push(file);
+        renderPreview(file, 'upload-box-q', 'clear-q');
+    } else {
+        answerFiles.push(file);
+        renderPreview(file, 'upload-box-a', 'clear-a');
     }
 }
 
-document.getElementById('upload-box-q').addEventListener('paste', (e) => handlePaste(e, 'upload-box-q', 'clear-q'));
-document.getElementById('upload-box-a').addEventListener('paste', (e) => handlePaste(e, 'upload-box-a', 'clear-a'));
+// Render Preview
+function renderPreview(file, containerId, clearBtnId) {
+    const container = document.getElementById(containerId);
+    const clearBtn = document.getElementById(clearBtnId);
+    
+    const reader = new FileReader();
+    reader.onload = function (event) {
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'preview-img-container';
+        
+        const img = document.createElement('img');
+        img.src = event.target.result;
+        img.className = 'preview-img';
+        
+        imgContainer.appendChild(img);
+        container.appendChild(imgContainer);
+        clearBtn.hidden = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+// File Input Handling
+document.getElementById('file-input-q').addEventListener('change', (e) => {
+    Array.from(e.target.files).forEach(file => addFile(file, 'q'));
+    // Reset input so same file can be selected again if needed
+    e.target.value = '';
+});
+
+document.getElementById('file-input-a').addEventListener('change', (e) => {
+    Array.from(e.target.files).forEach(file => addFile(file, 'a'));
+    e.target.value = '';
+});
+
+// Click to Trigger Upload
+document.getElementById('upload-box-q').addEventListener('click', (e) => {
+    // Don't trigger if clicking clear button or image
+    if (e.target.id === 'clear-q' || e.target.tagName === 'IMG') return;
+    document.getElementById('file-input-q').click();
+});
+
+document.getElementById('upload-box-a').addEventListener('click', (e) => {
+    if (e.target.id === 'clear-a' || e.target.tagName === 'IMG') return;
+    document.getElementById('file-input-a').click();
+});
+
+// Image Paste Handling
+function handlePaste(e, type) {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    let hasImage = false;
+    for (const item of items) {
+        if (item.type.indexOf('image') === 0) {
+            const blob = item.getAsFile();
+            addFile(blob, type);
+            hasImage = true;
+        }
+    }
+    if (hasImage) e.preventDefault();
+}
+
+document.getElementById('upload-box-q').addEventListener('paste', (e) => handlePaste(e, 'q'));
+document.getElementById('upload-box-a').addEventListener('paste', (e) => handlePaste(e, 'a'));
 
 // Clear Buttons
-function clearImages(containerId, clearBtnId) {
+function clearImages(containerId, clearBtnId, type) {
     const container = document.getElementById(containerId);
-    // Remove all .preview-img-container
     const images = container.querySelectorAll('.preview-img-container');
     images.forEach(img => img.remove());
     document.getElementById(clearBtnId).hidden = true;
+    
+    // Clear state
+    if (type === 'q') questionFiles = [];
+    if (type === 'a') answerFiles = [];
 }
 
 document.getElementById('clear-q').addEventListener('click', (e) => {
-    e.stopPropagation(); // Prevent triggering upload box click
-    clearImages('upload-box-q', 'clear-q');
+    e.stopPropagation(); 
+    clearImages('upload-box-q', 'clear-q', 'q');
 });
 
 document.getElementById('clear-a').addEventListener('click', (e) => {
     e.stopPropagation();
-    clearImages('upload-box-a', 'clear-a');
+    clearImages('upload-box-a', 'clear-a', 'a');
 });
 
 // Dynamic Tag Loading for Upload Form
@@ -409,35 +449,27 @@ loadUploadTags(); // Load on startup
 // Submit Upload
 document.getElementById('btn-submit-upload').addEventListener('click', async () => {
     const btn = document.getElementById('btn-submit-upload');
+    
+    // Validation
+    if (questionFiles.length === 0 || answerFiles.length === 0) {
+        alert('Please upload both Question and Answer images.');
+        return;
+    }
+
     btn.disabled = true;
     btn.textContent = 'Uploading...';
 
     try {
         const formData = new FormData();
 
-        // Get Images (convert base64/blob from preview back to file or just use what we have?)
-        // The paste event gives us access to files, but we didn't store them.
-        // We need to store the files when pasted.
-        // Let's refactor paste handling to store files in an array.
-
-        // REFACTOR: We need to capture the actual File objects.
-        // For this prototype, let's assume the user pastes images and we can't easily get the File object back from DOM <img> src if it's base64.
-        // Actually, we can convert base64 to blob.
-
-        async function appendImagesFromContainer(containerId, fieldName) {
-            const container = document.getElementById(containerId);
-            const imgs = container.querySelectorAll('img');
-
-            for (let i = 0; i < imgs.length; i++) {
-                const src = imgs[i].src;
-                const res = await fetch(src);
-                const blob = await res.blob();
-                formData.append(fieldName, blob, `image_${i}.png`);
-            }
-        }
-
-        await appendImagesFromContainer('upload-box-q', 'question_images');
-        await appendImagesFromContainer('upload-box-a', 'answer_images');
+        // Append files from state
+        questionFiles.forEach((file, i) => {
+            formData.append('question_images', file, `q_${i}.png`);
+        });
+        
+        answerFiles.forEach((file, i) => {
+            formData.append('answer_images', file, `a_${i}.png`);
+        });
 
         // Metadata
         // Handle Custom Inputs
@@ -476,9 +508,9 @@ document.getElementById('btn-submit-upload').addEventListener('click', async () 
                 overlay.hidden = true;
             }, 2000);
 
-            // Clear Form but keep some fields (Curriculum, Subject, Year) for easier bulk upload
-            clearImages('upload-box-q', 'clear-q');
-            clearImages('upload-box-a', 'clear-a');
+            // Clear Form
+            clearImages('upload-box-q', 'clear-q', 'q');
+            clearImages('upload-box-a', 'clear-a', 'a');
             document.getElementById('input-qno').value = '';
 
             // Reset Tag inputs
@@ -490,7 +522,7 @@ document.getElementById('btn-submit-upload').addEventListener('click', async () 
             document.getElementById('new-tag-name').hidden = true;
             document.getElementById('new-tag-name').value = '';
 
-            // Refresh filters and tags
+            // Refresh actions
             loadFilters();
             loadUploadTags();
         } else {
