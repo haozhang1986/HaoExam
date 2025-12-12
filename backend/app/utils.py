@@ -33,8 +33,8 @@ def stitch_images(upload_files: List[UploadFile]) -> Image.Image:
     
     y_offset = 0
     for img in images:
-        # Center the image horizontally to handle varying widths better
-        x_offset = (max_width - img.width) // 2
+        # Left align the image
+        x_offset = 0
         new_im.paste(img, (x_offset, y_offset))
         y_offset += img.height
         

@@ -6,12 +6,13 @@ venv/
 .env
 
 # Database
-# *.db
-# *.sqlite3
+*.db
+*.sqlite3
 
 # Uploads (optional, but usually we don't commit large uploads)
-# backend/static/uploads/
-# Keeping uploads for now as it's a small personal project, or uncomment above to ignore.
+backend/static/uploads/
+backend/static/downloads/
+backend/static/*.pdf
 
 # OS
 .DS_Store

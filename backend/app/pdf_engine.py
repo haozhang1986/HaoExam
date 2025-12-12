@@ -1,14 +1,24 @@
+import hashlib
+# Monkey-patch hashlib.md5 to support 'usedforsecurity' kwarg ignored in Python 3.7 but used by ReportLab
+if hasattr(hashlib, 'md5'):
+    _original_md5 = hashlib.md5
+    def _patched_md5(*args, **kwargs):
+        kwargs.pop('usedforsecurity', None)
+        return _original_md5(*args, **kwargs)
+    hashlib.md5 = _patched_md5
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
 from PIL import Image
 import os
 
-def generate_worksheet(questions, output_path: str, include_answers: bool = False):
+def generate_worksheet(questions, output, include_answers: bool = False):
     """
     Generates a PDF worksheet from a list of Question objects.
+    output: Filename (str) or file-like object (BytesIO)
     """
-    c = canvas.Canvas(output_path, pagesize=A4)
+    c = canvas.Canvas(output, pagesize=A4)
     width, height = A4 # 595.27, 841.89 points
     
     margin = 40
@@ -103,4 +113,6 @@ def generate_worksheet(questions, output_path: str, include_answers: bool = Fals
     try:
         c.save()
     except Exception as e:
-        print(f"Error saving PDF: {e}")
+        with open("debug_log.txt", "a") as f:
+            f.write(f"PDF Save Error: {e}\n")
+        raise e

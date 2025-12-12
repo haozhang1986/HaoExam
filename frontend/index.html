@@ -21,9 +21,7 @@
     <div class="sidebar-overlay" id="sidebar-overlay"></div>
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
-            <div class="logo">
-                <img src="haoexam_logo_fixed.png" alt="HaoExam Logo" style="height: 80px;">
-            </div>
+            <!-- Logo Removed -->
 
             <nav class="main-nav">
                 <button id="nav-gallery" class="nav-item active">
@@ -52,9 +50,14 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Month</label>
+                    <label>Month/Season</label>
                     <select id="filter-month">
                         <option value="">All</option>
+                        <option value="Spring">Spring (Feb/Mar)</option>
+                        <option value="Summer">Summer (May/Jun)</option>
+                        <option value="Autumn">Autumn (Oct/Nov)</option>
+                        <option value="Winter">Winter</option>
+                        <option disabled>--- Months ---</option>
                         <option value="January">January</option>
                         <option value="February">February</option>
                         <option value="March">March</option>
@@ -67,6 +70,18 @@
                         <option value="October">October</option>
                         <option value="November">November</option>
                         <option value="December">December</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Paper Number</label>
+                    <select id="filter-paper">
+                        <option value="">All</option>
+                        <option value="Paper 1">Paper 1</option>
+                        <option value="Paper 2">Paper 2</option>
+                        <option value="Paper 3">Paper 3</option>
+                        <option value="Paper 4">Paper 4</option>
+                        <option value="Paper 5">Paper 5</option>
+                        <option value="Paper 6">Paper 6</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -93,6 +108,9 @@
                 <button id="btn-show-questions" class="btn-primary" style="width: 100%; margin-top: 0.5rem;">
                     Show Questions
                 </button>
+                <button id="btn-reset-filters" class="btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+                    Reset Filters
+                </button>
             </div>
 
             <div class="basket-section">
@@ -102,9 +120,11 @@
                     <label for="chk-include-answers" style="font-size: 0.875rem; white-space: nowrap;">Include
                         Answers</label>
                 </div>
-                <button id="btn-generate-pdf" class="btn-primary" disabled style="width: 100%;">
-                    Generate PDF
+                <button id="btn-safe-pdf" type="button" class="btn-primary" disabled style="width: 100%;">
+                    Generate PDF (Safe)
                 </button>
+                <div id="pdf-status" style="margin-top: 0.5rem; font-size: 0.8rem; color: #666; text-align: center;">
+                </div>
             </div>
         </aside>
 
@@ -116,8 +136,8 @@
                     <!-- Search bar removed -->
                 </div>
                 <div id="gallery-grid" class="gallery-grid">
-                    <!-- Questions will be loaded here -->
-                    <div class="loading-state">Select filters and click "Show Questions" to begin.</div>
+                    <div class="loading-state" style="color: #666;">Please select filters on the left and click "Show
+                        Questions" to begin.</div>
                 </div>
             </div>
 
@@ -132,24 +152,30 @@
                         <div class="upload-box" id="upload-box-q" tabindex="0">
                             <input type="file" id="file-input-q" accept="image/*" multiple hidden>
                             <div class="placeholder">
-                                <div style="font-size: 3rem; margin-bottom: 1rem;">📋</div>
-                                <div>Click to Upload Question Image</div>
-                                <div style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af;">(or Paste Ctrl+V)</div>
+                                <div style="font-size: 3rem; margin-bottom: 1rem; cursor: default;">📋</div>
+                                <label for="file-input-q"
+                                    style="cursor: pointer; text-decoration: underline; font-weight: bold;">Click to
+                                    Upload Question Image</label>
+                                <div style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af; cursor: text;">(or
+                                    Click here & Paste Ctrl+V)
+                                </div>
                             </div>
                             <button class="btn-clear" id="clear-q" hidden>×</button>
-                            <!-- Images will be appended here -->
                         </div>
 
                         <!-- Answer Image Upload -->
                         <div class="upload-box" id="upload-box-a" tabindex="0">
                             <input type="file" id="file-input-a" accept="image/*" multiple hidden>
                             <div class="placeholder">
-                                <div style="font-size: 3rem; margin-bottom: 1rem;">💡</div>
-                                <div>Click to Upload Answer Image</div>
-                                <div style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af;">(or Paste Ctrl+V)</div>
+                                <div style="font-size: 3rem; margin-bottom: 1rem; cursor: default;">💡</div>
+                                <label for="file-input-a"
+                                    style="cursor: pointer; text-decoration: underline; font-weight: bold;">Click to
+                                    Upload Answer Image</label>
+                                <div style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af; cursor: text;">(or
+                                    Click here & Paste Ctrl+V)
+                                </div>
                             </div>
                             <button class="btn-clear" id="clear-a" hidden>×</button>
-                            <!-- Images will be appended here -->
                         </div>
                     </div>
 
@@ -180,25 +206,32 @@
                             </div>
                             <div class="form-group">
                                 <label>Year</label>
-                                <input type="number" id="input-year" value="2024">
+                                <select id="input-year">
+                                    <option value="">Select...</option>
+                                    <option value="__new__">+ Create New</option>
+                                </select>
+                                <input type="number" id="new-year" placeholder="Enter Year" hidden>
                             </div>
                             <div class="form-group">
                                 <label>Month</label>
                                 <select id="input-month">
-                                    <option value="">None</option>
-                                    <option value="January">January</option>
-                                    <option value="February">February</option>
-                                    <option value="March">March</option>
-                                    <option value="April">April</option>
-                                    <option value="May">May</option>
-                                    <option value="June">June</option>
-                                    <option value="July">July</option>
-                                    <option value="August">August</option>
-                                    <option value="September">September</option>
-                                    <option value="October">October</option>
-                                    <option value="November">November</option>
-                                    <option value="December">December</option>
+                                    <option value="">Select Curriculum first...</option>
                                 </select>
+                                <input type="text" id="new-month" placeholder="Enter Month/Season" hidden>
+                            </div>
+                            <div class="form-group">
+                                <label>Paper Number</label>
+                                <select id="input-paper">
+                                    <option value="">Select...</option>
+                                    <option value="Paper 1">Paper 1</option>
+                                    <option value="Paper 2">Paper 2</option>
+                                    <option value="Paper 3">Paper 3</option>
+                                    <option value="Paper 4">Paper 4</option>
+                                    <option value="Paper 5">Paper 5</option>
+                                    <option value="Paper 6">Paper 6</option>
+                                    <option value="__new__">+ Create New</option>
+                                </select>
+                                <input type="text" id="new-paper" placeholder="e.g. Paper 1" hidden>
                             </div>
                             <div class="form-group">
                                 <label>Difficulty</label>
@@ -284,6 +317,32 @@
                 </div>
             </div>
 
+            <!-- Answer View Modal -->
+            <div id="modal-view-answer" class="overlay" hidden>
+                <div style="position: relative; max-width: 90vw; max-height: 90vh;">
+                    <img id="answer-img-view" src=""
+                        style="width: 100%; height: auto; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                    <button id="btn-close-answer"
+                        style="position: absolute; top: -40px; right: 0; background: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1.25rem; display: flex; align-items: center; justify-content: center;">×</button>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div id="modal-confirm-delete" class="overlay" hidden>
+                <div style="background: white; padding: 2rem; border-radius: 1rem; width: 400px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <h3 style="margin-bottom: 1rem; color: #1f2937;">Delete Question?</h3>
+                    <p style="color: #6b7280; margin-bottom: 2rem;">This action cannot be undone. Are you sure you want
+                        to proceed?</p>
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button id="btn-cancel-delete"
+                            style="padding: 0.75rem 1.5rem; border: 1px solid #e5e7eb; border-radius: 0.5rem; background: white; cursor: pointer;">Cancel</button>
+                        <button id="btn-confirm-delete"
+                            style="padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; background: #ef4444; color: white; cursor: pointer;">Delete</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Edit Tag Modal -->
             <div id="modal-edit-tag" class="overlay" hidden>
                 <div style="background: white; padding: 2rem; border-radius: 1rem; width: 400px; text-align: left;">
@@ -291,11 +350,11 @@
                     <input type="hidden" id="edit-tag-id">
                     <div class="form-group" style="margin-bottom: 1rem;">
                         <label>Category (Topic)</label>
-                        <input type="text" id="edit-tag-category" style="width: 100%;">
+                        <input type="text" id="manage-tag-category-input" style="width: 100%;">
                     </div>
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label>Name (Sub-topic)</label>
-                        <input type="text" id="edit-tag-name" style="width: 100%;">
+                        <input type="text" id="manage-tag-name-input" style="width: 100%;">
                     </div>
                     <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
                         <button id="btn-cancel-tag" class="nav-item"
@@ -320,17 +379,16 @@
                                 <option value="IGCSE">IGCSE</option>
                                 <option value="AP">AP</option>
                                 <option value="IB">IB</option>
+                                <option value="__new__">+ Create New</option>
                             </select>
+                            <input type="text" id="new-edit-curriculum" placeholder="New Curriculum" hidden>
                         </div>
                         <div class="form-group">
                             <label>Subject</label>
                             <select id="edit-subject">
-                                <option value="Math">Math</option>
-                                <option value="Physics">Physics</option>
-                                <option value="Chemistry">Chemistry</option>
-                                <option value="Biology">Biology</option>
-                                <option value="Economics">Economics</option>
+                                <option value="">Select...</option>
                             </select>
+                            <input type="text" id="new-edit-subject" placeholder="New Subject" hidden>
                         </div>
                         <div class="form-group">
                             <label>Year</label>
@@ -339,20 +397,12 @@
                         <div class="form-group">
                             <label>Month</label>
                             <select id="edit-month">
-                                <option value="">None</option>
-                                <option value="January">January</option>
-                                <option value="February">February</option>
-                                <option value="March">March</option>
-                                <option value="April">April</option>
-                                <option value="May">May</option>
-                                <option value="June">June</option>
-                                <option value="July">July</option>
-                                <option value="August">August</option>
-                                <option value="September">September</option>
-                                <option value="October">October</option>
-                                <option value="November">November</option>
-                                <option value="December">December</option>
+                                <option value="">Select...</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Paper Number</label>
+                            <input type="text" id="edit-paper">
                         </div>
                         <div class="form-group">
                             <label>Difficulty</label>
@@ -363,15 +413,29 @@
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>Topic (Category)</label>
+                            <select id="edit-tag-category">
+                                <option value="">Select...</option>
+                            </select>
+                            <input type="text" id="new-edit-tag-category" placeholder="New Topic" hidden>
+                        </div>
+                        <div class="form-group">
+                            <label>Sub-topic (Name)</label>
+                            <select id="edit-tag-name">
+                                <option value="">Select...</option>
+                            </select>
+                            <input type="text" id="new-edit-tag-name" placeholder="New Sub-topic" hidden>
+                        </div>
+                        <div class="form-group">
                             <label>Question No.</label>
                             <input type="text" id="edit-qno">
                         </div>
                     </div>
 
-                    <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 0.5rem;">
-                        <button id="btn-cancel-question" class="nav-item"
-                            style="border: 1px solid var(--border);">Cancel</button>
-                        <button id="btn-save-question" class="btn-primary">Save Changes</button>
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                        <button id="btn-cancel-question"
+                            style="flex: 1; padding: 0.75rem 1rem; border: 1px solid var(--border); background: white; border-radius: 0.5rem; cursor: pointer; font-weight: 500;">Cancel</button>
+                        <button id="btn-save-question" class="btn-primary" style="flex: 1;">Save Changes</button>
                     </div>
                 </div>
             </div>
@@ -379,7 +443,6 @@
         </main>
     </div>
 
-    <!-- Overlay -->
     <div id="overlay" class="overlay" hidden>
         <div style="background: white; padding: 3rem; border-radius: 1rem;">
             <div class="overlay-icon">✅</div>
@@ -388,7 +451,7 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=100"></script>
 </body>
 
 </html>

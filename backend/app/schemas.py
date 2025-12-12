@@ -30,7 +30,7 @@ class QuestionCreate(QuestionBase):
     pass
 
 class QuestionUpdate(QuestionBase):
-    pass
+    tags: Optional[List[TagCreate]] = None
 
 class Question(QuestionBase):
     id: int
@@ -41,6 +41,6 @@ class Question(QuestionBase):
     class Config:
         orm_mode = True
 
-class WorksheetRequest(BaseModel):
+class WorksheetGenerateRequest(BaseModel):
     question_ids: List[int]
     include_answers: bool = False

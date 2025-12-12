@@ -6,6 +6,7 @@ from . import models, schemas, crud
 from .database import SessionLocal, engine
 from fastapi.staticfiles import StaticFiles
 import os
+import shutil
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -69,7 +70,6 @@ def delete_tag(tag_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Tag not found")
     return {"status": "success"}
 
-from typing import List
 from fastapi import File, UploadFile, Form, Query
 import uuid
 from . import utils
@@ -87,6 +87,11 @@ def read_curriculums(db: Session = Depends(get_db)):
     curriculums = crud.get_curriculums(db)
     # Extract curriculum strings from tuples and filter out None
     return [c[0] for c in curriculums if c[0]]
+
+@app.get("/papers/", response_model=List[str])
+def read_papers(db: Session = Depends(get_db)):
+    papers = crud.get_papers(db)
+    return [p[0] for p in papers if p[0]]
 
 @app.post("/questions/", response_model=schemas.Question)
 def create_question(
@@ -150,6 +155,37 @@ def create_question(
 
     return crud.create_question(db=db, question=question_data, question_image_path=q_path, answer_image_path=a_path, tags=tags)
 
+@app.exception_handler(Exception)
+async def debug_exception_handler(request, exc):
+    import traceback
+    with open("global_error.log", "a") as f:
+        f.write(f"Global Exception: {str(exc)}\n")
+        f.write(traceback.format_exc())
+        f.write("\n")
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error", "error": str(exc)})
+
+@app.get("/metadata/distinct/{field}")
+def get_metadata(
+    field: str,
+    curriculum: str = None,
+    subject: str = None,
+    year: int = None,
+    month: str = None,
+    paper: str = None,
+    tag_category: str = None,
+    db: Session = Depends(get_db)
+):
+    return crud.get_distinct_values(
+        db, 
+        field, 
+        curriculum=curriculum, 
+        subject=subject, 
+        year=year,
+        month=month,
+        paper=paper,
+        tag_category=tag_category
+    )
+
 @app.get("/questions/", response_model=List[schemas.Question])
 def read_questions(
     skip: int = 0, 
@@ -159,6 +195,7 @@ def read_questions(
     year: int = None,
     month: str = None,
     difficulty: models.DifficultyLevel = None,
+    paper: str = None,
     tag_category: str = Query(None),
     tag_name: str = Query(None),
     db: Session = Depends(get_db)
@@ -172,6 +209,7 @@ def read_questions(
         year=year,
         month=month,
         difficulty=difficulty,
+        paper=paper,
         tag_category=tag_category,
         tag_name=tag_name
     )
@@ -190,23 +228,57 @@ def delete_question(question_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Question not found")
     return {"status": "success"}
 
-from fastapi.responses import FileResponse
+from fastapi import Response
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from . import pdf_engine
 
 @app.post("/worksheet/generate")
-def generate_worksheet(request: schemas.WorksheetRequest, db: Session = Depends(get_db)):
-    # Fetch questions
-    # Note: .in_() might not preserve order. 
+async def generate_worksheet_endpoint(request: schemas.WorksheetGenerateRequest, db: Session = Depends(get_db)):
+    # 1. Fetch questions
     questions = db.query(models.Question).filter(models.Question.id.in_(request.question_ids)).all()
     
-    # Sort questions to match the order in request.question_ids
+    # Sort
     question_map = {q.id: q for q in questions}
     ordered_questions = [question_map[qid] for qid in request.question_ids if qid in question_map]
     
-    output_path = os.path.join(STATIC_DIR, "worksheet.pdf")
+    # 2. Generate to unique server file
+    file_id = f"{uuid.uuid4()}.pdf"
+    output_path = os.path.join(STATIC_DIR, file_id)
+    
     pdf_engine.generate_worksheet(ordered_questions, output_path, include_answers=request.include_answers)
     
-    return FileResponse(output_path, media_type='application/pdf', filename="worksheet.pdf")
+    # 3. Return ID
+    return {"status": "success", "file_id": file_id}
+
+@app.get("/worksheet/prepare-download/{file_id}")
+async def prepare_download_link(file_id: str, name: str = "worksheet.pdf"):
+    """
+    Copies the temporary UUID file to a path with the strict filename:
+    /static/downloads/{file_id}/{name}
+    Returns the static URL.
+    """
+    src_path = os.path.join(STATIC_DIR, file_id)
+    if not os.path.exists(src_path):
+        raise HTTPException(status_code=404, detail="File not found or expired")
+    
+    # Create specific folder for this file to avoid name collisions
+    # Structure: static/downloads/<uuid>/<RealName.pdf>
+    download_dir = os.path.join(STATIC_DIR, "downloads", file_id)
+    os.makedirs(download_dir, exist_ok=True)
+    
+    dest_path = os.path.join(download_dir, name)
+    
+    # Copy file (using copy2 to preserve metadata)
+    shutil.copy2(src_path, dest_path)
+    
+    # Construct URL (assuming /static mount)
+    # Note: name needs to be URL encoded in the return, but the file on disk should be the real name
+    from urllib.parse import quote
+    url_name = quote(name)
+    static_url = f"/static/downloads/{file_id}/{url_name}"
+    
+    return {"status": "success", "url": static_url}
 
 # Mount frontend at root (must be last to avoid shadowing API routes)
 app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "../frontend"), html=True), name="frontend")

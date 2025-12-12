@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Table, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, Table, Enum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from .database import Base
 import enum
@@ -38,9 +38,12 @@ class Question(Base):
 
 class Tag(Base):
     __tablename__ = "tags"
+    __table_args__ = (
+        UniqueConstraint('name', 'category', name='uq_tag_name_category'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True) # e.g., "Integration", "Calculus"
+    name = Column(String, index=True) # Removed unique=True
     category = Column(String, nullable=True) # e.g., "Topic", "Sub-topic"
 
     questions = relationship("Question", secondary=question_tags, back_populates="tags")
