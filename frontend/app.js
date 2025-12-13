@@ -3,6 +3,12 @@ if (API_BASE_URL === 'null' || API_BASE_URL.startsWith('file:')) {
     API_BASE_URL = 'http://127.0.0.1:8000';
 }
 
+// GLOBAL ERROR HANDLER (silent in production)
+window.onerror = function (msg, url, lineNo, columnNo, error) {
+    console.error('JS Error:', msg, 'at line', lineNo);
+    return false;
+};
+
 // State
 let basket = new Set();
 let currentFilters = {
@@ -15,39 +21,286 @@ let currentFilters = {
     tag_name: ''
 };
 
-// DOM Elements
+// Auth State
+// DOM Elements - Defined Globally to avoid Reference Errors
+const loginError = document.getElementById('login-error');
+const btnLogout = document.getElementById('btn-logout');
+const btnLogin = document.getElementById('btn-login'); // Header button
+const btnLoginModal = document.getElementById('btn-login-modal'); // Modal submit button
+const btnRegisterSwitch = document.getElementById('btn-register-switch');
+const btnLoginSwitch = document.getElementById('btn-login-switch');
+const userDisplay = document.getElementById('user-display');
+const userRoleDisplay = document.getElementById('user-role');
+const navRegister = document.getElementById('nav-register'); // If exists
 const galleryGrid = document.getElementById('gallery-grid');
 const basketCount = document.getElementById('basket-count');
 const btnSafePdf = document.getElementById('btn-safe-pdf');
-const btnGeneratePdf = btnSafePdf; // Alias for compatibility
-const btnShowQuestions = document.getElementById('btn-show-questions');
+const btnGeneratePdf = btnSafePdf; // Alias
+const btnResetFilters = document.getElementById('btn-reset-filters');
 const chkIncludeAnswers = document.getElementById('chk-include-answers');
+
+const modalLogin = document.getElementById('modal-login');
+const formLogin = document.getElementById('form-login');
+const formRegister = document.getElementById('form-register');
+const tabLogin = document.getElementById('tab-login');
+const tabRegister = document.getElementById('tab-register');
+const regError = document.getElementById('reg-error');
+const btnOpenLogin = document.getElementById('btn-open-login');
+const btnCloseLogin = document.getElementById('btn-close-login');
+
+let authToken = localStorage.getItem('auth_token');
+let authRole = localStorage.getItem('auth_role') || 'student'; // Default to student/guest
+let authUsername = localStorage.getItem('auth_username');
+
+// Strict Auth wrapper (throws if no token)
+async function authFetch(url, options = {}) {
+    if (!authToken) {
+        showLoginModal();
+        throw new Error("No auth token");
+    }
+    return apiFetch(url, options); // Reuse apiFetch logic
+}
+
+// Public/Optional Auth wrapper (adds token if present, no error if missing)
+async function apiFetch(url, options = {}) {
+    const headers = options.headers || {};
+    let finalHeaders;
+
+    if (headers instanceof Headers) {
+        finalHeaders = headers;
+        if (authToken) finalHeaders.append('Authorization', `Bearer ${authToken}`);
+    } else {
+        finalHeaders = { ...headers };
+        if (authToken) finalHeaders['Authorization'] = `Bearer ${authToken}`;
+    }
+    options.headers = finalHeaders;
+
+    const response = await fetch(url, options);
+    if (response.status === 401) {
+        // Only if we SENT a token and it expired, we might want to logout.
+        // But if we didn't send a token, 401 means "Login Required" for this endpoint.
+        if (authToken) {
+            logout();
+            throw new Error("Unauthorized (Token Expired)");
+        }
+        // If we represent Guest, 401 just means forbidden action.
+    }
+    return response;
+}
+
+// Modal Logic
+// (DOM Elements moved to top)
+
+// Initial Setup
+
+// Initial Setup
+if (btnOpenLogin) btnOpenLogin.addEventListener('click', showLoginModal);
+if (btnCloseLogin) btnCloseLogin.addEventListener('click', hideLoginModal);
+
+// Tab Switching
+if (tabLogin && tabRegister) {
+    tabLogin.addEventListener('click', () => switchAuthTab('login'));
+    tabRegister.addEventListener('click', () => switchAuthTab('register'));
+}
+
+function switchAuthTab(mode) {
+    if (mode === 'login') {
+        tabLogin.classList.add('active');
+        tabLogin.style.color = 'var(--primary)';
+        tabRegister.classList.remove('active');
+        tabRegister.style.color = 'var(--text-muted)';
+
+        formLogin.hidden = false;
+        formRegister.hidden = true;
+    } else {
+        tabRegister.classList.add('active');
+        tabRegister.style.color = 'var(--primary)';
+        tabLogin.classList.remove('active');
+        tabLogin.style.color = 'var(--text-muted)';
+
+        formRegister.hidden = false;
+        formLogin.hidden = true;
+    }
+}
+
+function showLoginModal() {
+    if (modalLogin) {
+        modalLogin.hidden = false;
+        switchAuthTab('login'); // Default to login
+    }
+}
+
+function hideLoginModal() {
+    if (modalLogin) modalLogin.hidden = true;
+}
+
+// Login Submit
+if (formLogin) {
+    formLogin.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        loginError.style.display = 'none';
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        try {
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+
+            const response = await fetch(`${API_BASE_URL}/token`, { method: 'POST', body: formData });
+
+            if (response.ok) {
+                handleAuthSuccess(await response.json(), username);
+            } else {
+                loginError.textContent = "Invalid credentials";
+                loginError.style.display = 'block';
+            }
+        } catch (e) {
+            console.error(e);
+            loginError.textContent = "Login error";
+            loginError.style.display = 'block';
+        }
+    });
+}
+
+// Register Submit
+if (formRegister) {
+    formRegister.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        regError.style.display = 'none';
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        const role = document.getElementById('reg-role').value;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, role })
+            });
+
+            if (response.ok) {
+                handleAuthSuccess(await response.json(), username);
+            } else {
+                const data = await response.json();
+                regError.textContent = data.detail || "Registration failed";
+                regError.style.display = 'block';
+            }
+        } catch (e) {
+            console.error(e);
+            regError.textContent = "Registration error";
+            regError.style.display = 'block';
+        }
+    });
+}
+
+function handleAuthSuccess(data, username) {
+    authToken = data.access_token;
+    authRole = data.role;
+    authUsername = username;
+
+    localStorage.setItem('auth_token', authToken);
+    localStorage.setItem('auth_role', authRole);
+    localStorage.setItem('auth_username', authUsername);
+
+    hideLoginModal();
+    updateUIByRole();
+    if (document.getElementById('view-manage').classList.contains('active')) {
+        loadManageView();
+    } else {
+        loadQuestions();
+    }
+}
+
+function logout() {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_role');
+    localStorage.removeItem('auth_username');
+    location.reload();
+}
+
+if (btnLogout) {
+    btnLogout.addEventListener('click', logout);
+}
+
+// Role-Based UI (Updated for Guest/Student default)
+function updateUIByRole() {
+    const userDisplay = document.getElementById('user-display');
+    const btnOpenLogin = document.getElementById('btn-open-login');
+    const btnLogout = document.getElementById('btn-logout');
+
+    // Default Role if not logged in
+    const effectiveRole = authRole || 'student';
+
+    // Toggle Login/Logout buttons
+    // Toggle Login/Logout buttons
+    // Toggle Login/Logout buttons
+    // Toggle Login/Logout buttons
+    if (authToken) {
+        if (userDisplay) {
+            userDisplay.textContent = `${authUsername} (${effectiveRole})`;
+            userDisplay.hidden = false;
+            userDisplay.style.display = '';
+        }
+        if (btnLogout) {
+            btnLogout.hidden = false;
+            btnLogout.style.display = '';
+        }
+        if (btnOpenLogin) {
+            btnOpenLogin.hidden = true;
+            btnOpenLogin.style.display = 'none';
+        }
+    } else {
+        if (userDisplay) {
+            userDisplay.hidden = true;
+            userDisplay.style.display = 'none';
+        }
+        if (btnLogout) {
+            btnLogout.hidden = true;
+            btnLogout.style.display = 'none';
+        }
+        if (btnOpenLogin) {
+            btnOpenLogin.hidden = false;
+            btnOpenLogin.style.display = '';
+        }
+    }
+
+    // Strict Access Control: Admin Only
+    const isAdmin = (authToken && effectiveRole === 'admin');
+    const basketSection = document.querySelector('.basket-section');
+
+    if (isAdmin) {
+        document.getElementById('nav-upload').style.display = '';
+        document.getElementById('nav-manage').style.display = '';
+        if (basketSection) basketSection.style.display = '';
+    } else {
+        document.getElementById('nav-upload').style.display = 'none';
+        document.getElementById('nav-manage').style.display = 'none';
+        // Basket allowed for Teachers? Or only Admin too?
+        // User said "only use admin account can upload and manage".
+        // Basket is part of "Management" or "Gallery"? Usually Teachers need Basket.
+        // Assuming Basket logic remains: Student hidden, others show.
+        // But requested specifically "Upload and Management" buttons.
+        if (effectiveRole === 'student') {
+            if (basketSection) basketSection.style.display = 'none';
+        } else {
+            if (basketSection) basketSection.style.display = '';
+        }
+    }
+}
+
+function checkLogin() {
+    updateUIByRole(); // Just update UI, don't force modal
+}
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
+    checkLogin(); // Check auth first
+    loadQuestions(); // Load initial questions
     loadFilters();
     updateBasketUI();
-    uploadManager.refreshAll();
 
-    // Edit Manager
-    const editManager = new CascadingDropdownManager({
-        curriculum: 'edit-curriculum',
-        subject: 'edit-subject',
-        year: 'edit-year',
-        month: 'edit-month',
-        paper: 'edit-paper',
-        tagCategory: 'edit-tag-category',
-        tagName: 'edit-tag-name'
-    });
-    // We don't refreshAll immediately for edit because it depends on the opened question
-    window.editManager = editManager; // Global access for modal opening
-
-    // "Create New" Handlers for Edit Modal
-    handleNewInput('edit-tag-category', 'new-edit-tag-category');
-    handleNewInput('edit-tag-name', 'new-edit-tag-name');
-
-    // Initial Load
-    loadQuestions();
+    // Managers are initialized at the bottom of the file (Lines 1670+) to ensure all classes are defined.
 });
 
 // --- Navigation Logic ---
@@ -64,6 +317,70 @@ function switchView(viewId) {
 }
 
 document.getElementById('nav-gallery').addEventListener('click', () => switchView('view-gallery'));
+
+// --- ID Search Listener (Top Level) ---
+const headerSearchId = document.getElementById('header-search-id');
+const btnClearSearch = document.getElementById('btn-clear-search');
+
+// Show/hide clear button based on input content
+function updateClearBtnVisibility() {
+    if (btnClearSearch && headerSearchId) {
+        btnClearSearch.style.display = headerSearchId.value ? 'block' : 'none';
+    }
+}
+
+if (headerSearchId) {
+    // Input event - fires when user types
+    headerSearchId.addEventListener('input', () => {
+        updateClearBtnVisibility();
+
+        // If user is typing an ID, clear all sidebar filters
+        if (headerSearchId.value) {
+            const filterSelects = document.querySelectorAll('.filters-section select');
+            filterSelects.forEach(select => {
+                if (select.multiple) {
+                    Array.from(select.options).forEach(opt => opt.selected = false);
+                    if (select.multiSelectInstance) {
+                        select.multiSelectInstance.refresh();
+                    }
+                } else {
+                    select.value = '';
+                }
+            });
+        }
+
+        // Check which view is active and call appropriate load function
+        const viewManage = document.getElementById('view-manage');
+        const isManageActive = viewManage && viewManage.classList.contains('active');
+
+        if (isManageActive) {
+            currentFilters = getFilters();
+            loadManageView();
+        } else {
+            loadQuestions();
+        }
+    });
+}
+
+// Clear button click handler
+if (btnClearSearch && headerSearchId) {
+    btnClearSearch.addEventListener('click', () => {
+        headerSearchId.value = '';
+        updateClearBtnVisibility();
+        headerSearchId.focus();
+
+        // Reload questions/manage view
+        const viewManage = document.getElementById('view-manage');
+        const isManageActive = viewManage && viewManage.classList.contains('active');
+        if (isManageActive) {
+            currentFilters = getFilters();
+            loadManageView();
+        } else {
+            loadQuestions();
+        }
+    });
+}
+
 document.getElementById('nav-upload').addEventListener('click', () => switchView('view-upload'));
 document.getElementById('nav-manage').addEventListener('click', () => {
     switchView('view-manage');
@@ -121,21 +438,48 @@ async function loadFilters() {
             subjSelect.appendChild(option);
         });
 
-        // Load Papers
-        const paperResponse = await fetch(`${API_BASE_URL}/papers/`);
-        const papers = await paperResponse.json();
-        const paperSelect = document.getElementById('filter-paper');
-        if (paperSelect) {
-            paperSelect.innerHTML = '<option value="">All</option>';
-            papers.forEach(p => {
-                const option = document.createElement('option');
-                option.value = p;
-                option.textContent = p;
-                paperSelect.appendChild(option);
-            });
-        }
 
-        // Load Tags
+        // Auto-refresh questions on filter change
+        const filterIds = [
+            'filter-curriculum', 'filter-subject', 'filter-year',
+            'filter-month', 'filter-difficulty',
+            'filter-tag-category', 'filter-tag-name',
+        ];
+
+        filterIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                // For text input, use 'input' event (maybe debounce?)
+                // For Selects, use 'change'
+                const eventType = el.tagName === 'INPUT' ? 'input' : 'change';
+
+                el.addEventListener(eventType, () => {
+                    // If user selects a filter, clear the ID search box
+                    const headerSearch = document.getElementById('header-search-id');
+                    if (headerSearch && headerSearch.value) {
+                        headerSearch.value = '';
+
+                    }
+
+                    // Check which view is active
+                    const viewManage = document.getElementById('view-manage');
+                    const isManageActive = viewManage && viewManage.classList.contains('active');
+
+                    if (isManageActive) {
+                        currentFilters = getFilters();
+                        loadManageView();
+                    } else {
+                        loadQuestions();
+                    }
+                });
+            }
+        });
+
+        // Search ID Listener (New Header Input)
+        const searchIdInput = document.getElementById('header-search-id');
+        // ID search input listener (attached in ID search section above)
+
+        // Upload Managers
         const tagsResponse = await fetch(`${API_BASE_URL}/tags/`);
         const tags = await tagsResponse.json();
 
@@ -169,29 +513,54 @@ async function loadFilters() {
 }
 
 function getFilters() {
+    const getValue = (id) => {
+        const el = document.getElementById(id);
+        if (!el) return '';
+        // Check for multi-select
+        if (el.multiple) {
+            const values = Array.from(el.selectedOptions).map(opt => opt.value).filter(v => v);
+            return values.length > 0 ? values : '';
+        }
+        return el.value;
+    };
+
     return {
-        curriculum: document.getElementById('filter-curriculum').value,
-        subject: document.getElementById('filter-subject').value,
-        year: document.getElementById('filter-year') ? document.getElementById('filter-year').value : '',
-        month: document.getElementById('filter-month').value,
-        paper: document.getElementById('filter-paper') ? document.getElementById('filter-paper').value : '',
-        difficulty: document.getElementById('filter-difficulty').value,
-        tag_category: document.getElementById('filter-tag-category').value,
-        tag_name: document.getElementById('filter-tag-name').value
+        id: getValue('header-search-id'),
+        curriculum: getValue('filter-curriculum'),
+        subject: getValue('filter-subject'),
+        year: getValue('filter-year'),
+        month: getValue('filter-month'),
+        difficulty: getValue('filter-difficulty'),
+        tag_category: getValue('filter-tag-category'),
+        tag_name: getValue('filter-tag-name')
     };
 }
 
 // Manual Search Trigger
 // Added debug for filter verification
-const btnResetFilters = document.getElementById('btn-reset-filters');
 if (btnResetFilters) {
     btnResetFilters.addEventListener('click', async () => {
         // 1. Clear all Select inputs in filters section
         const filtersDiv = document.querySelector('.filters-section');
         if (filtersDiv) {
             const selects = filtersDiv.querySelectorAll('select');
-            selects.forEach(s => s.value = "");
+            selects.forEach(s => {
+                if (s.multiple) {
+                    // For multi-select, deselect all options
+                    Array.from(s.options).forEach(opt => opt.selected = false);
+                    // Refresh the MultiSelectDropdown visual component if it exists
+                    if (s.multiSelectInstance) {
+                        s.multiSelectInstance.refresh();
+                    }
+                } else {
+                    s.value = "";
+                }
+            });
         }
+
+        // Also clear the ID search box
+        const headerSearch = document.getElementById('header-search-id');
+        if (headerSearch) headerSearch.value = '';
 
         // 2. Refresh Cascade Options (to restore "All")
         await loadFilters(); // Assuming this fetches defaults when inputs are empty
@@ -208,34 +577,57 @@ if (btnResetFilters) {
     });
 }
 
-btnShowQuestions.addEventListener('click', () => {
-    currentFilters = getFilters();
 
-    // Check which view is active
-    if (document.getElementById('view-manage').classList.contains('active')) {
-        loadManageView();
-    } else {
-        loadQuestions();
-    }
-});
+// --- Gallery Logic ---
 
 // --- Gallery Logic ---
 async function loadQuestions() {
-    galleryGrid.innerHTML = '<div class="loading-state">Loading questions...</div>';
+    const galleryGrid = document.getElementById('gallery-grid');
+    if (!galleryGrid) return;
 
+    // Get filters
+    const filters = getFilters();
     const params = new URLSearchParams();
-    for (const [key, value] of Object.entries(currentFilters)) {
-        if (value) params.append(key, value);
+
+    // Map filters to params (supporting Arrays for Multi-Select)
+    // Map filters to params (supporting Arrays for Multi-Select)
+
+    // STRICT SEARCH: If ID is present, ignore other filters
+
+    if (filters.id) {
+        params.append('id', filters.id);
+
+        // Clear other params to ensure exact match? 
+        // Or should we allow drilling down? 
+        // User requested "precise search... displayed many other questions".
+        // This implies they want ONLY that question.
+        // So we skip appending others.
+    } else {
+        for (const [key, value] of Object.entries(filters)) {
+            // Skip empty values and skip 'id' (handled above)
+            if (!value || key === 'id' || (Array.isArray(value) && value.length === 0)) continue;
+
+            if (Array.isArray(value)) {
+                value.forEach(v => params.append(key, v));
+            } else {
+                params.append(key, value);
+            }
+        }
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/questions/?${params.toString()}`);
+        galleryGrid.innerHTML = '<div class="loading-state">Loading questions...</div>';
+
+        // USE apiFetch (Optional Auth)
+        const response = await apiFetch(`${API_BASE_URL}/questions/?${params.toString()}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
         const questions = await response.json();
 
         galleryGrid.innerHTML = '';
 
         if (questions.length === 0) {
-            galleryGrid.innerHTML = '<div class="loading-state">No questions found matching your filters.</div>';
+            galleryGrid.innerHTML = '<div style="text-align:center; grid-column: 1/-1; padding: 2rem;">No questions found matching your criteria</div>';
             return;
         }
 
@@ -243,21 +635,17 @@ async function loadQuestions() {
             const card = createQuestionCard(q);
             galleryGrid.appendChild(card);
         });
+
     } catch (e) {
         console.error("Error loading questions:", e);
-        galleryGrid.innerHTML = `
-            <div class="loading-state" style="color: red; text-align: left; white-space: pre-wrap;">
-                Error loading questions. 
-                Debug Info:
-                ${e.message}
-                API: ${API_BASE_URL}
-            </div>`;
+        galleryGrid.innerHTML = '<div style="color:red; text-align:center; grid-column: 1/-1;">Error loading questions</div>';
     }
 }
 
 function createQuestionCard(question) {
     const card = document.createElement('div');
     card.className = 'question-card';
+    card.title = `ID: ${question.id}`; // Show ID on hover
 
     const isSelected = basket.has(question.id);
 
@@ -274,10 +662,36 @@ function createQuestionCard(question) {
         });
     }
 
-    // Format tags: "Topic: Sub-topic"
+    // Format tags
     const tagBadges = uniqueTags.map(tag =>
         `<span class="tag">${tag.category}: ${tag.name}</span>`
     ).join('');
+
+    // Role-Based Button Visibility
+    let showAnswerBtn = '';
+    let basketBtn = '';
+
+    // Student: No Answer, No Basket
+    if (authRole === 'student') {
+        showAnswerBtn = `
+            <button class="btn-primary" disabled style="flex: 1; background-color: #ccc; cursor: not-allowed; font-size: 0.875rem;" title="Students cannot view answers">
+                Answer Hidden
+            </button>`;
+        // Basket button hidden for students
+    } else {
+        // Teacher/Admin
+        showAnswerBtn = `
+            <button class="btn-primary" style="flex: 1; background-color: #6366f1; font-size: 0.875rem;" onclick="viewAnswer('${question.answer_image_path}')">
+                Show Answer
+            </button>`;
+
+        // Basket available for Teacher/Admin
+        basketBtn = `
+            <button class="btn-basket ${isSelected ? 'selected' : ''}" style="flex: 1; font-size: 0.875rem;" 
+                    onclick="toggleBasket(${question.id}, this)">
+                ${isSelected ? 'Remove' : 'Add to Basket'}
+            </button>`;
+    }
 
     card.innerHTML = `
         <div class="card-img">
@@ -288,13 +702,8 @@ function createQuestionCard(question) {
                 ${tagBadges}
             </div>
             <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                <button class="btn-primary" style="flex: 1; background-color: #6366f1; font-size: 0.875rem;" onclick="viewAnswer('${question.answer_image_path}')">
-                    Show Answer
-                </button>
-                <button class="btn-basket ${isSelected ? 'selected' : ''}" style="flex: 1; font-size: 0.875rem;" 
-                        onclick="toggleBasket(${question.id}, this)">
-                    ${isSelected ? 'Remove' : 'Add to Basket'}
-                </button>
+                ${showAnswerBtn}
+                ${basketBtn}
             </div>
         </div>
     `;
@@ -385,71 +794,43 @@ btnSafePdf.addEventListener('click', async (e) => {
                 return;
             }
 
-            // 2. Calculate Filename EARLY (for URL construction)
-            let filename = "HaoExam_Worksheet.pdf";
-            try {
-                const topicEl = document.getElementById('filter-tag-category');
-                const subtopicEl = document.getElementById('filter-tag-name');
-                const topic = topicEl ? topicEl.value : "";
-                const subtopic = subtopicEl ? subtopicEl.value : "";
+            // 2. Calculate Filename: date + worksheet
+            const today = new Date().toISOString().split('T')[0];
+            const filename = `${today}_HaoExam_Worksheet.pdf`;
 
-                const sanitize = (str) => (str || "").replace(/[\\/:*?"<>|]/g, '_');
-                const today = new Date().toISOString().split('T')[0];
-
-                if (topic && subtopic) {
-                    filename = `${today}_${sanitize(topic)}_${sanitize(subtopic)}.pdf`;
-                } else if (topic) {
-                    filename = `${today}_${sanitize(topic)}.pdf`;
-                } else {
-                    filename = `${today}_HaoExam_Worksheet.pdf`;
-                }
-            } catch (err) {
-                console.error("Filename generation error:", err);
-            }
-
-            // 3. Request Static Link (The "Physical Rename" Strategy)
-            document.getElementById('pdf-status').textContent = "Preparing secure download link...";
+            // 3. Request Static Link (The "Physical Rename" Strategy - ORIGINAL WORKING CODE)
+            const statusEl = document.getElementById('pdf-status');
+            statusEl.textContent = "Preparing download...";
 
             try {
                 const linkResponse = await fetch(`${API_BASE_URL}/worksheet/prepare-download/${data.file_id}?name=${encodeURIComponent(filename)}`);
                 if (!linkResponse.ok) throw new Error("Failed to prepare download link");
 
                 const linkData = await linkResponse.json();
-
                 if (!linkData.url) throw new Error("No URL returned");
 
                 let finalUrl = linkData.url;
-                // Ensure absolute URL if API_BASE_URL is defined
+                // Ensure absolute URL
                 if (finalUrl.startsWith('/') && API_BASE_URL) {
                     finalUrl = API_BASE_URL.replace(/\/$/, '') + finalUrl;
                 }
 
-                const a = document.createElement('a');
 
-                // Auto-Download Strategy (Restored)
-                const oldLink = document.getElementById('manual-pdf-link');
-                if (oldLink) oldLink.remove();
+                // Use hidden iframe for download - most reliable method
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                iframe.src = finalUrl;
+                document.body.appendChild(iframe);
 
-                a.href = finalUrl;
-                a.download = filename;
-                a.target = "_blank";
-                a.style.display = 'none'; // Hidden
+                // Remove iframe after a delay
+                setTimeout(() => document.body.removeChild(iframe), 10000);
 
-                document.body.appendChild(a);
-                a.click();
-
-                // Cleanup
-                setTimeout(() => {
-                    document.body.removeChild(a);
-                }, 1000);
-
-                // Success Message (Simple)
-                document.getElementById('pdf-status').textContent = "Download started!";
-                document.getElementById('pdf-status').style.color = "green";
+                statusEl.textContent = "Download started! Check your Downloads folder.";
+                statusEl.style.color = "green";
             } catch (linkErr) {
-                console.error(linkErr);
-                document.getElementById('pdf-status').textContent = "Link Error: " + linkErr.message;
-                document.getElementById('pdf-status').style.color = "red";
+                console.error('Download error:', linkErr);
+                statusEl.textContent = "Download Error: " + linkErr.message;
+                statusEl.style.color = "red";
             }
 
         } else {
@@ -565,27 +946,6 @@ document.getElementById('clear-a').addEventListener('click', (e) => {
 // Dynamic Tag Loading for Upload Form
 
 
-// Handle "Create New" selection
-function handleNewInput(selectId, inputId) {
-    const select = document.getElementById(selectId);
-    const input = document.getElementById(inputId);
-
-    select.addEventListener('change', () => {
-        if (select.value === '__new__') {
-            input.hidden = false;
-            input.focus();
-        } else {
-            input.hidden = true;
-        }
-    });
-}
-
-handleNewInput('input-tag-category', 'new-tag-category');
-handleNewInput('input-tag-name', 'new-tag-name');
-handleNewInput('input-curriculum', 'new-curriculum');
-handleNewInput('input-subject', 'new-subject');
-handleNewInput('input-paper', 'new-paper');
-
 // Dynamic Month Logic
 function updateMonthOptions(curriculumSelectId, monthSelectId) {
     const curriculum = document.getElementById(curriculumSelectId).value;
@@ -658,7 +1018,6 @@ handleNewInput('input-tag-category', 'new-tag-category');
 handleNewInput('input-tag-name', 'new-tag-name');
 handleNewInput('input-curriculum', 'new-curriculum');
 handleNewInput('input-subject', 'new-subject');
-handleNewInput('input-paper', 'new-paper');
 handleNewInput('input-year', 'new-year');
 handleNewInput('input-month', 'new-month');
 
@@ -702,9 +1061,6 @@ document.getElementById('btn-submit-upload').addEventListener('click', async () 
         let tagName = document.getElementById('input-tag-name').value;
         if (tagName === '__new__') tagName = document.getElementById('new-tag-name').value;
 
-        let paper = document.getElementById('input-paper').value;
-        if (paper === '__new__') paper = document.getElementById('new-paper').value;
-
         let year = document.getElementById('input-year').value;
         if (year === '__new__') year = document.getElementById('new-year').value;
 
@@ -712,14 +1068,13 @@ document.getElementById('btn-submit-upload').addEventListener('click', async () 
         formData.append('subject', subject);
         formData.append('year', year);
         formData.append('month', document.getElementById('input-month').value);
-        formData.append('paper', paper);
         formData.append('difficulty', document.getElementById('input-difficulty').value);
         formData.append('question_number', document.getElementById('input-qno').value);
 
         if (tagCategory) formData.append('tag_category', tagCategory);
         if (tagName) formData.append('tag_name', tagName);
 
-        const response = await fetch(`${API_BASE_URL}/questions/`, {
+        const response = await authFetch(`${API_BASE_URL}/questions/`, {
             method: 'POST',
             body: formData
         });
@@ -776,18 +1131,24 @@ async function loadManageView() {
 
     try {
         const params = new URLSearchParams();
+
         if (typeof currentFilters !== 'undefined') {
             for (const [key, value] of Object.entries(currentFilters)) {
-                if (value) params.append(key, value);
+                if (Array.isArray(value)) {
+                    value.forEach(v => params.append(key, v));
+                } else if (value) {
+                    params.append(key, value);
+                }
             }
         }
+
 
         let url = `${API_BASE_URL}/questions/?${params.toString()}`;
         if (!params.toString()) {
             url += 'limit=50'; // Default if no filter
         }
 
-        const response = await fetch(url);
+        const response = await authFetch(url);
         const questions = await response.json();
         // Cache for access by ID
         window.currentManagedQuestions = questions;
@@ -860,16 +1221,15 @@ document.getElementById('manage-grid').addEventListener('click', (e) => {
         e.stopPropagation();
 
         const id = e.target.getAttribute('data-id');
-        console.log("Delete popup requested for ID:", id);
-
         questionToDeleteId = id;
+
         modalConfirmDelete.hidden = false;
     }
 });
 
 async function deleteQuestion(id) {
     try {
-        const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
+        const response = await authFetch(`${API_BASE_URL}/questions/${id}`, {
             method: 'DELETE'
         });
 
@@ -1015,7 +1375,7 @@ if (btnSaveTag) {
 window.confirmDeleteTag = async function (id) {
     if (confirm('Are you sure you want to delete this tag? This will remove it from all associated questions.')) {
         try {
-            const response = await fetch(`${API_BASE_URL}/tags/${id}`, {
+            const response = await authFetch(`${API_BASE_URL}/tags/${id}`, {
                 method: 'DELETE'
             });
 
@@ -1056,7 +1416,14 @@ class CascadingDropdownManager {
     }
 
     initListeners() {
-        const { curriculum, subject, year, month, paper, tag_category, tag_name } = this.config;
+
+        const { curriculum, subject, year, month, tag_category, tag_name } = this.config;
+
+        if (!curriculum) console.error("Config missing: curriculum");
+        if (!subject) console.error("Config missing: subject");
+        if (!year) console.error("Config missing: year");
+        if (!month) console.error("Config missing: month");
+        if (!tag_category) console.error("Config missing: tag_category");
 
         this.attachListener(curriculum, () => this.updateOptions('subject'));
         this.attachListener(subject, () => {
@@ -1064,8 +1431,6 @@ class CascadingDropdownManager {
             this.updateOptions('tag_category'); // Topic depends on Subject
         });
         this.attachListener(year, () => this.updateOptions('month'));
-        // Month updates might affect Paper if strictly hierarchical, or just filter
-        this.attachListener(month, () => this.updateOptions('paper'));
         this.attachListener(tag_category, () => this.updateOptions('tag_name'));
     }
 
@@ -1073,6 +1438,8 @@ class CascadingDropdownManager {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('change', callback);
+        } else {
+            console.error(`Missing element: ${id}`);
         }
     }
 
@@ -1081,7 +1448,6 @@ class CascadingDropdownManager {
             'subject': this.config.subject,
             'year': this.config.year,
             'month': this.config.month,
-            'paper': this.config.paper,
             'tag_category': this.config.tag_category,
             'tag_name': this.config.tag_name
         };
@@ -1093,12 +1459,23 @@ class CascadingDropdownManager {
 
         // Build query params from current values
         const params = new URLSearchParams();
-        const { curriculum, subject, year, month, paper, tag_category } = this.config;
+        // ...
+        const { curriculum, subject, year, month, tag_category } = this.config;
 
         const addParam = (key, id) => {
             const el = document.getElementById(id);
-            if (el && el.value && el.value !== '__new__') {
-                params.append(key, el.value);
+            if (el) {
+                if (el.tagName === 'SELECT') {
+                    // Support Multi-Select
+                    const values = Array.from(el.selectedOptions).map(o => o.value).filter(v => v && v !== '__new__');
+                    // console.log(`DEBUG: addParam ${key} from ${id} found values:`, values);
+                    values.forEach(v => params.append(key, v));
+                } else {
+                    // Handle standard inputs (text/number)
+                    if (el.value) params.append(key, el.value);
+                }
+            } else {
+                console.warn(`DEBUG: addParam ${key} element ${id} NOT FOUND`);
             }
         };
 
@@ -1111,10 +1488,6 @@ class CascadingDropdownManager {
 
         if (!isTagUpdate) {
             if (targetField !== 'year') addParam('year', year);
-
-            if (targetField === 'paper') {
-                addParam('month', month);
-            }
         }
 
         if (targetField === 'tag_name') {
@@ -1127,25 +1500,30 @@ class CascadingDropdownManager {
                 const values = await response.json();
                 this.populateDropdown(targetId, values);
             } else {
-                // If fetch fails (e.g. 404 or 500), still populate to show "Create New" option
                 console.warn(`Fetch failed for ${targetField}, defaulting to empty list.`);
                 this.populateDropdown(targetId, []);
             }
         } catch (e) {
             console.error(`Error updating ${targetField}`, e);
-            // Ensure dropdown is populated (empty) so "Create New" appears
             this.populateDropdown(targetId, []);
         }
     }
 
     populateDropdown(elementId, values) {
-        // Trace 3
         const select = document.getElementById(elementId);
         if (!select) return;
 
+        // Guard against non-select elements (e.g. edit-year is an input)
+        if (select.tagName !== 'SELECT') {
+            // console.warn(`Skipping populateDropdown for non-select element: ${elementId}`);
+            return;
+        }
+
         // Treat both 'input-' (upload) and 'edit-' (edit modal) as forms needing "Create New"
         const isUpload = elementId.startsWith('input-') || elementId.startsWith('edit-');
-        const currentValue = select.value;
+
+        // Save previously selected values to restore them if possible
+        const oldValues = Array.from(select.selectedOptions).map(o => o.value);
 
         let optionsHtml = '';
 
@@ -1153,6 +1531,10 @@ class CascadingDropdownManager {
             optionsHtml += '<option value="">Select...</option>';
             optionsHtml += '<option value="__new__">+ Create New</option>';
         } else {
+            // For Filter, "All" is redundant if we assume "Empty Selection" == "All", 
+            // but standard UI usually keeps an empty option or "All".
+            // For Multi-Select, we usually don't need a specific "All" option if checkboxes are used.
+            // But let's keep it for compatibility with single select fallback.
             optionsHtml += '<option value="">All</option>';
         }
 
@@ -1164,16 +1546,22 @@ class CascadingDropdownManager {
 
         select.innerHTML = optionsHtml;
 
-        // Restore value if possible
-        if (values && (values.includes(currentValue) || values.includes(parseInt(currentValue)))) {
-            select.value = currentValue;
+        // Restore values
+        oldValues.forEach(val => {
+            // Basic restoration
+            const opt = select.querySelector(`option[value="${val}"]`);
+            if (opt) opt.selected = true;
+        });
+
+        // Notify MultiSelect Wrapper if exists
+        if (select.multiSelectInstance) {
+            select.multiSelectInstance.refresh();
         }
     }
 
-
     // Trigger initial updates based on default values
     refreshAll() {
-        const { curriculum, subject, year, month, paper, tag_category, tag_name } = this.config;
+        const { curriculum, subject, year, month, tag_category, tag_name } = this.config;
 
         // Trigger updates in order of hierarchy
         if (curriculum) this.updateOptions('subject');
@@ -1182,8 +1570,109 @@ class CascadingDropdownManager {
             this.updateOptions('tag_category');
         }
         if (year) this.updateOptions('month');
-        if (month) this.updateOptions('paper');
         if (tag_category) this.updateOptions('tag_name');
+    }
+}
+
+
+// --- MultiSelect Dropdown Component ---
+class MultiSelectDropdown {
+    constructor(selectId) {
+        this.selectInfo = document.getElementById(selectId);
+        if (!this.selectInfo) return;
+
+        this.selectInfo.multiple = true; // Force underlying select to likely handle multiple
+        this.selectInfo.style.display = 'none'; // Hide original
+
+        this.container = document.createElement('div');
+        this.container.className = 'multiselect-container';
+
+        this.btn = document.createElement('button');
+        this.btn.className = 'multiselect-btn';
+        this.btn.type = 'button';
+        this.btn.textContent = 'All'; // Default
+        this.btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggle();
+        });
+
+        this.dropdown = document.createElement('div');
+        this.dropdown.className = 'multiselect-dropdown';
+        this.dropdown.hidden = true;
+
+        // Click outside to close
+        document.addEventListener('click', (e) => {
+            if (!this.container.contains(e.target)) {
+                this.dropdown.hidden = true;
+            }
+        });
+
+        this.container.appendChild(this.btn);
+        this.container.appendChild(this.dropdown);
+
+        this.selectInfo.parentNode.insertBefore(this.container, this.selectInfo.nextSibling); // Insert after select
+
+        // Link instance for external refresh
+        this.selectInfo.multiSelectInstance = this;
+
+        this.refresh();
+    }
+
+    toggle() {
+        this.dropdown.hidden = !this.dropdown.hidden;
+    }
+
+    refresh() {
+        // Build checkboxes from select options
+        this.dropdown.innerHTML = '';
+        const options = Array.from(this.selectInfo.options);
+
+        let selectedCount = 0;
+        let selectedLabels = [];
+
+        options.forEach(opt => {
+            if (!opt.value || opt.value === '__new__') return; // Skip placeholders
+
+            const item = document.createElement('label');
+            item.className = 'multiselect-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = opt.value;
+            checkbox.checked = opt.selected;
+
+            checkbox.addEventListener('change', () => {
+                opt.selected = checkbox.checked;
+                this.updateButton();
+                // Trigger change on original select
+                this.selectInfo.dispatchEvent(new Event('change'));
+            });
+
+            if (opt.selected) {
+                selectedCount++;
+                selectedLabels.push(opt.text);
+            }
+
+            item.appendChild(checkbox);
+            item.appendChild(document.createTextNode(opt.text));
+            this.dropdown.appendChild(item);
+        });
+
+        this.updateButton();
+    }
+
+    updateButton() {
+        const selected = Array.from(this.selectInfo.selectedOptions).filter(o => o.value);
+        if (selected.length === 0) {
+            this.btn.textContent = 'All';
+            this.btn.classList.remove('active');
+        } else if (selected.length <= 2) {
+            this.btn.textContent = selected.map(o => o.text).join(', ');
+            this.btn.classList.add('active');
+        } else {
+            this.btn.textContent = `${selected.length} Selected`;
+            this.btn.classList.add('active');
+        }
     }
 }
 
@@ -1196,11 +1685,18 @@ document.addEventListener('DOMContentLoaded', () => {
             subject: 'filter-subject',
             year: 'filter-year',
             month: 'filter-month',
-            paper: 'filter-paper',
             tag_category: 'filter-tag-category',
             tag_name: 'filter-tag-name'
         });
         window.filterManager = filterManager; // Global access
+
+        // Initialize Multi-Select support
+        const msFields = ['filter-difficulty', 'filter-tag-category', 'filter-tag-name'];
+        msFields.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) new MultiSelectDropdown(id);
+        });
+
         filterManager.refreshAll();
 
         // Upload Manager
@@ -1211,7 +1707,6 @@ document.addEventListener('DOMContentLoaded', () => {
             subject: 'input-subject',
             year: 'input-year',
             month: 'input-month', // Be careful with conflict
-            paper: 'input-paper',
             tag_category: 'input-tag-category', // Topic
             tag_name: 'input-tag-name' // Sub-topic
         });
@@ -1225,7 +1720,6 @@ document.addEventListener('DOMContentLoaded', () => {
             subject: 'edit-subject',
             year: 'edit-year',
             month: 'edit-month',
-            paper: 'edit-paper',
             tag_category: 'edit-tag-category',
             tag_name: 'edit-tag-name'
         });
@@ -1277,7 +1771,6 @@ window.openEditQuestionModalById = (event, id) => {
                 subject: 'edit-subject',
                 year: 'edit-year',
                 month: 'edit-month',
-                paper: 'edit-paper',
                 tag_category: 'edit-tag-category',
                 tag_name: 'edit-tag-name'
             });
@@ -1301,7 +1794,9 @@ window.openEditQuestionModalById = (event, id) => {
 
 window.openEditQuestionModal = async (q) => {
     // Populate fields
+
     document.getElementById('edit-question-id').value = q.id;
+
     document.getElementById('edit-curriculum').value = q.curriculum || 'A-Level';
 
     // Trigger updates sequence for edit modal
@@ -1309,27 +1804,36 @@ window.openEditQuestionModal = async (q) => {
     // We assume default Subject is Math if not present, but updateOptions reads current value.
 
     // 1. Update Subject options (if curriculum changed)
+
     try {
         await window.editManager.updateOptions('subject');
     } catch (e) { console.error(e); }
 
+
     document.getElementById('edit-subject').value = q.subject || 'Math';
 
-    // 2. Set Year/Month/Paper
+    // 2. Set Year/Month
+
     document.getElementById('edit-year').value = q.year || '';
 
-    // Month depends on Year? In filter yes. In edit... not strictly enforced by API but UI might need it.
-    // Our CascadingDropdownManager links year -> month.
-    // But month list is static? No, updateMonthOptions.
-    // Let's manually trigger month options using existing helper
-    updateMonthOptions('edit-curriculum', 'edit-month');
+    // 3. Trigger Month Updated
+
+    await window.editManager.updateOptions('month');
+
     document.getElementById('edit-month').value = q.month || '';
 
-    document.getElementById('edit-paper').value = q.paper || '';
+    // 3.5 Trigger Paper Update - REMOVED but checking if safe
+    // console.log("DEBUG: openEditQuestionModal Step 8 (Update Paper)");
+    // await window.editManager.updateOptions('paper'); 
+
+    // 4. Populate Tags
+
     document.getElementById('edit-difficulty').value = q.difficulty || 'Medium';
+
     document.getElementById('edit-qno').value = q.question_number || '';
 
     // 3. Populate Topic (Category)
+
     try {
         await window.editManager.updateOptions('tag_category');
     } catch (e) {
@@ -1366,6 +1870,8 @@ window.openEditQuestionModal = async (q) => {
     modalEditQuestion.hidden = false;
 };
 
+
+
 if (btnCancelQuestion) {
     btnCancelQuestion.addEventListener('click', () => {
         modalEditQuestion.hidden = true;
@@ -1386,7 +1892,6 @@ if (btnSaveQuestion) {
         }
         const year = document.getElementById('edit-year').value;
         const month = document.getElementById('edit-month').value;
-        const paper = document.getElementById('edit-paper').value;
         const difficulty = document.getElementById('edit-difficulty').value;
         const qno = document.getElementById('edit-qno').value;
 
@@ -1406,7 +1911,6 @@ if (btnSaveQuestion) {
             subject,
             year: year ? parseInt(year) : null,
             month,
-            paper,
             difficulty,
             question_number: qno
         };
@@ -1426,7 +1930,7 @@ if (btnSaveQuestion) {
         // For now, let's go with: if specified, replace. If both empty, clear.
 
         try {
-            const response = await fetch(`${API_BASE_URL}/questions/${id}`, {
+            const response = await authFetch(`${API_BASE_URL}/questions/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'

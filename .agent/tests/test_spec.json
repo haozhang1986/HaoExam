@@ -1,0 +1,360 @@
+{
+  "version": "1.0",
+  "app_url": "http://127.0.0.1:8000",
+  "accounts": {
+    "admin": { "username": "admin", "password": "admin123" },
+    "teacher": { "username": "teacher", "password": "teacher123" },
+    "student": { "username": "student", "password": "student123" }
+  },
+  "test_suites": [
+    {
+      "id": "page_load",
+      "name": "页面加载测试",
+      "tests": [
+        {
+          "id": "PL001",
+          "name": "首页加载",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "wait", "seconds": 2 }
+          ],
+          "verify": [
+            { "type": "element_exists", "selector": "#gallery-grid", "description": "Gallery 区域存在" },
+            { "type": "element_exists", "selector": ".sidebar", "description": "侧边栏存在" },
+            { "type": "no_console_errors", "description": "无控制台错误" }
+          ]
+        },
+        {
+          "id": "PL002",
+          "name": "筛选器加载",
+          "steps": [
+            { "action": "navigate", "url": "/" }
+          ],
+          "verify": [
+            { "type": "element_exists", "selector": "#filter-curriculum", "description": "Curriculum 筛选器存在" },
+            { "type": "element_exists", "selector": "#filter-subject", "description": "Subject 筛选器存在" },
+            { "type": "element_exists", "selector": "#filter-tag-category", "description": "Topic 筛选器存在" }
+          ]
+        },
+        {
+          "id": "PL003",
+          "name": "题目卡片显示",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "wait", "seconds": 2 }
+          ],
+          "verify": [
+            { "type": "element_count_gte", "selector": ".question-card", "count": 1, "description": "至少显示1个题目卡片" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "name": "用户认证测试",
+      "tests": [
+        {
+          "id": "AUTH001",
+          "name": "Admin 登录",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "click", "selector": "#btn-open-login" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "type", "selector": "#login-username", "text": "admin" },
+            { "action": "type", "selector": "#login-password", "text": "admin123" },
+            { "action": "click", "selector": "#form-login button[type='submit']" },
+            { "action": "wait", "seconds": 1 }
+          ],
+          "verify": [
+            { "type": "element_text_contains", "selector": "#user-display", "text": "admin", "description": "显示用户名 admin" },
+            { "type": "element_visible", "selector": "#nav-manage", "description": "Management 导航可见" }
+          ]
+        },
+        {
+          "id": "AUTH002",
+          "name": "登出功能",
+          "requires": ["AUTH001"],
+          "steps": [
+            { "action": "click", "selector": "#btn-logout" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_text_contains", "selector": "#user-display", "text": "Guest", "description": "显示 Guest" }
+          ]
+        },
+        {
+          "id": "AUTH003",
+          "name": "错误密码",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "click", "selector": "#btn-open-login" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "type", "selector": "#login-username", "text": "admin" },
+            { "action": "type", "selector": "#login-password", "text": "wrongpassword" },
+            { "action": "click", "selector": "#form-login button[type='submit']" },
+            { "action": "wait", "seconds": 1 }
+          ],
+          "verify": [
+            { "type": "element_visible", "selector": "#login-error", "description": "显示错误提示" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "filters",
+      "name": "筛选器测试",
+      "tests": [
+        {
+          "id": "FLT001",
+          "name": "Curriculum 筛选",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "select", "selector": "#filter-curriculum", "value": "A-Level" },
+            { "action": "wait", "seconds": 1 }
+          ],
+          "verify": [
+            { "type": "element_has_options", "selector": "#filter-subject", "description": "Subject 选项已更新" }
+          ]
+        },
+        {
+          "id": "FLT002",
+          "name": "Subject 动态更新",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "select", "selector": "#filter-curriculum", "value": "A-Level" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "select", "selector": "#filter-subject", "value": "Math" },
+            { "action": "wait", "seconds": 1 }
+          ],
+          "verify": [
+            { "type": "element_has_options", "selector": "#filter-tag-category", "description": "Topic 选项已更新" }
+          ]
+        },
+        {
+          "id": "FLT003",
+          "name": "Reset Filters",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "select", "selector": "#filter-curriculum", "value": "A-Level" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "click", "selector": "#btn-reset-filters" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_value_equals", "selector": "#filter-curriculum", "value": "", "description": "Curriculum 重置为 All" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "id_search",
+      "name": "ID 搜索测试",
+      "tests": [
+        {
+          "id": "IDS001",
+          "name": "ID 搜索找到题目",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "type", "selector": "#header-search-id", "text": "1" },
+            { "action": "wait", "seconds": 1 }
+          ],
+          "verify": [
+            { "type": "element_count_equals", "selector": ".question-card", "count": 1, "description": "只显示1个题目" }
+          ]
+        },
+        {
+          "id": "IDS002",
+          "name": "ID 搜索清空筛选器",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "select", "selector": "#filter-curriculum", "value": "A-Level" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "type", "selector": "#header-search-id", "text": "1" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_value_equals", "selector": "#filter-curriculum", "value": "", "description": "筛选器已清空" }
+          ]
+        },
+        {
+          "id": "IDS003",
+          "name": "筛选器清空搜索框",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "type", "selector": "#header-search-id", "text": "1" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "select", "selector": "#filter-curriculum", "value": "A-Level" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_value_equals", "selector": "#header-search-id", "value": "", "description": "搜索框已清空" }
+          ]
+        },
+        {
+          "id": "IDS004",
+          "name": "清除按钮",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "type", "selector": "#header-search-id", "text": "1" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "click", "selector": "#btn-clear-search" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_value_equals", "selector": "#header-search-id", "value": "", "description": "搜索框已清空" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "card_interaction",
+      "name": "卡片交互测试",
+      "tests": [
+        {
+          "id": "CARD001",
+          "name": "添加到篮子",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "wait", "seconds": 1 },
+            { "action": "click", "selector": ".question-card:first-child .btn-add-basket" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_text_not_equals", "selector": "#basket-count", "text": "0", "description": "篮子计数增加" }
+          ]
+        },
+        {
+          "id": "CARD002",
+          "name": "从篮子移除",
+          "requires": ["CARD001"],
+          "steps": [
+            { "action": "click", "selector": ".question-card:first-child .btn-add-basket" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_text_equals", "selector": "#basket-count", "text": "0", "description": "篮子计数归零" }
+          ]
+        },
+        {
+          "id": "CARD003",
+          "name": "查看答案",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "wait", "seconds": 1 },
+            { "action": "click", "selector": ".question-card:first-child .btn-view-answer" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_visible", "selector": "#modal-view-answer", "description": "答案模态框显示" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pdf_generation",
+      "name": "PDF 生成测试",
+      "tests": [
+        {
+          "id": "PDF001",
+          "name": "生成 PDF",
+          "steps": [
+            { "action": "navigate", "url": "/" },
+            { "action": "wait", "seconds": 1 },
+            { "action": "click", "selector": ".question-card:first-child .btn-add-basket" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "click", "selector": "#btn-safe-pdf" },
+            { "action": "wait", "seconds": 3 }
+          ],
+          "verify": [
+            { "type": "element_text_contains", "selector": "#pdf-status", "text": "Download", "description": "显示下载状态" }
+          ],
+          "check_download": {
+            "filename_pattern": "^\\d{4}-\\d{2}-\\d{2}_HaoExam_Worksheet\\.pdf$",
+            "description": "文件名格式: YYYY-MM-DD_HaoExam_Worksheet.pdf"
+          }
+        }
+      ]
+    },
+    {
+      "id": "upload",
+      "name": "上传功能测试",
+      "login_required": "teacher",
+      "tests": [
+        {
+          "id": "UPL001",
+          "name": "上传页面导航",
+          "steps": [
+            { "action": "login", "account": "teacher" },
+            { "action": "click", "selector": "#nav-upload" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_visible", "selector": "#view-upload", "description": "上传页面显示" }
+          ]
+        },
+        {
+          "id": "UPL002",
+          "name": "表单动态更新",
+          "steps": [
+            { "action": "login", "account": "teacher" },
+            { "action": "click", "selector": "#nav-upload" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "select", "selector": "#input-curriculum", "value": "A-Level" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_has_options", "selector": "#input-subject", "description": "Subject 选项已更新" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "management",
+      "name": "管理功能测试",
+      "login_required": "admin",
+      "tests": [
+        {
+          "id": "MGT001",
+          "name": "管理页面导航",
+          "steps": [
+            { "action": "login", "account": "admin" },
+            { "action": "click", "selector": "#nav-manage" },
+            { "action": "wait", "seconds": 1 }
+          ],
+          "verify": [
+            { "type": "element_visible", "selector": "#view-manage", "description": "管理页面显示" },
+            { "type": "element_visible", "selector": "#manage-grid", "description": "题目列表显示" }
+          ]
+        },
+        {
+          "id": "MGT002",
+          "name": "编辑按钮",
+          "steps": [
+            { "action": "login", "account": "admin" },
+            { "action": "click", "selector": "#nav-manage" },
+            { "action": "wait", "seconds": 1 },
+            { "action": "click", "selector": "#manage-grid .btn-edit:first-child" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_visible", "selector": "#modal-edit-question", "description": "编辑模态框显示" }
+          ]
+        },
+        {
+          "id": "MGT003",
+          "name": "Tags 标签页",
+          "steps": [
+            { "action": "login", "account": "admin" },
+            { "action": "click", "selector": "#nav-manage" },
+            { "action": "wait", "seconds": 0.5 },
+            { "action": "click", "selector": "#tab-tags" },
+            { "action": "wait", "seconds": 0.5 }
+          ],
+          "verify": [
+            { "type": "element_visible", "selector": "#tags-grid", "description": "标签列表显示" }
+          ]
+        }
+      ]
+    }
+  ]
+}

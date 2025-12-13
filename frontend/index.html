@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HaoExam Question Bank</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=120">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
@@ -37,6 +37,8 @@
 
             <div class="filters-section">
                 <!-- Filters Header Removed -->
+                <!-- ID Search Removed -->
+
                 <div class="filter-group">
                     <label>Curriculum</label>
                     <select id="filter-curriculum">
@@ -50,6 +52,12 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Year</label>
+                    <select id="filter-year">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Month/Season</label>
                     <select id="filter-month">
                         <option value="">All</option>
@@ -57,31 +65,6 @@
                         <option value="Summer">Summer (May/Jun)</option>
                         <option value="Autumn">Autumn (Oct/Nov)</option>
                         <option value="Winter">Winter</option>
-                        <option disabled>--- Months ---</option>
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Paper Number</label>
-                    <select id="filter-paper">
-                        <option value="">All</option>
-                        <option value="Paper 1">Paper 1</option>
-                        <option value="Paper 2">Paper 2</option>
-                        <option value="Paper 3">Paper 3</option>
-                        <option value="Paper 4">Paper 4</option>
-                        <option value="Paper 5">Paper 5</option>
-                        <option value="Paper 6">Paper 6</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -105,9 +88,7 @@
                         <option value="Hard">Hard</option>
                     </select>
                 </div>
-                <button id="btn-show-questions" class="btn-primary" style="width: 100%; margin-top: 0.5rem;">
-                    Show Questions
-                </button>
+                <!-- Show Questions Button Removed (Auto-load) -->
                 <button id="btn-reset-filters" class="btn-secondary" style="width: 100%; margin-top: 0.5rem;">
                     Reset Filters
                 </button>
@@ -125,19 +106,62 @@
                 </button>
                 <div id="pdf-status" style="margin-top: 0.5rem; font-size: 0.8rem; color: #666; text-align: center;">
                 </div>
+
             </div>
+
+            <!-- User Footer Removed -->
         </aside>
 
-        <main class="main-content">
+        <main class="main-content" style="display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+            <!-- Global Header -->
+            <header
+                style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: white; border-bottom: 1px solid var(--border);">
+                <!-- Search Container -->
+                <div style="flex: 1; max-width: 300px; display: flex; align-items: center; gap: 0.5rem;">
+                    <span
+                        style="font-weight: 600; font-size: 1.1rem; color: var(--primary); margin-right: 1rem;">HaoExam</span>
+                    <div style="position: relative; width: 100%;">
+                        <style>
+                            /* Hide native browser clear button */
+                            #header-search-id::-webkit-search-cancel-button {
+                                display: none;
+                                -webkit-appearance: none;
+                            }
+
+                            #header-search-id::-ms-clear {
+                                display: none;
+                            }
+                        </style>
+                        <input type="text" id="header-search-id" placeholder="Search ID..." inputmode="numeric"
+                            style="padding: 0.5rem 2rem 0.5rem 0.75rem; border: 1px solid var(--border); border-radius: 999px; width: 100%; font-size: 0.875rem; text-align: center; box-sizing: border-box;">
+                        <button id="btn-clear-search" type="button"
+                            style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #666; font-size: 1.1rem; font-weight: bold; padding: 0 4px; line-height: 1; display: none;"
+                            title="Clear">×</button>
+                    </div>
+                </div>
+
+
+                <div id="auth-container" style="display: flex; align-items: center; gap: 1rem;">
+                    <div id="user-display" style="font-size: 0.875rem; color: var(--text-muted);">
+                        Guest
+                    </div>
+                    <button id="btn-open-login" class="btn-primary" style="font-size: 0.875rem;">
+                        Login / Sign Up
+                    </button>
+                    <button id="btn-logout" class="btn-secondary" style="font-size: 0.875rem;" hidden>
+                        Sign Out
+                    </button>
+                </div>
+            </header>
             <!-- Gallery View -->
             <div id="view-gallery" class="view active">
-                <div class="view-header">
+                <div class="view-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2>Question Bank</h2>
                     <!-- Search bar removed -->
                 </div>
                 <div id="gallery-grid" class="gallery-grid">
-                    <div class="loading-state" style="color: #666;">Please select filters on the left and click "Show
-                        Questions" to begin.</div>
+                    <div class="loading-state" style="color: #666;">Please select filters on the left to view questions.
+                    </div>
                 </div>
             </div>
 
@@ -218,20 +242,6 @@
                                     <option value="">Select Curriculum first...</option>
                                 </select>
                                 <input type="text" id="new-month" placeholder="Enter Month/Season" hidden>
-                            </div>
-                            <div class="form-group">
-                                <label>Paper Number</label>
-                                <select id="input-paper">
-                                    <option value="">Select...</option>
-                                    <option value="Paper 1">Paper 1</option>
-                                    <option value="Paper 2">Paper 2</option>
-                                    <option value="Paper 3">Paper 3</option>
-                                    <option value="Paper 4">Paper 4</option>
-                                    <option value="Paper 5">Paper 5</option>
-                                    <option value="Paper 6">Paper 6</option>
-                                    <option value="__new__">+ Create New</option>
-                                </select>
-                                <input type="text" id="new-paper" placeholder="e.g. Paper 1" hidden>
                             </div>
                             <div class="form-group">
                                 <label>Difficulty</label>
@@ -401,10 +411,6 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Paper Number</label>
-                            <input type="text" id="edit-paper">
-                        </div>
-                        <div class="form-group">
                             <label>Difficulty</label>
                             <select id="edit-difficulty">
                                 <option value="Easy">Easy</option>
@@ -443,6 +449,76 @@
         </main>
     </div>
 
+    <div id="modal-login" class="overlay" style="display: flex; z-index: 9999;" hidden>
+        <div
+            style="background: white; padding: 2.5rem; border-radius: 1rem; width: 100%; max-width: 400px; box-shadow: var(--shadow-xl);">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="color: var(--primary); font-size: 1.5rem; margin-bottom: 0.5rem;">HaoExam</h2>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1rem;">
+                    <button id="tab-login" class="btn-text active"
+                        style="font-weight: bold; color: var(--primary);">Login</button>
+                    <span style="color: var(--border);">|</span>
+                    <button id="tab-register" class="btn-text" style="color: var(--text-muted);">Sign Up</button>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="form-login">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Username</label>
+                    <input type="text" id="login-username" required style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required style="width: 100%;">
+                </div>
+                <div id="login-error" style="color: red; margin-bottom: 1rem; font-size: 0.875rem; display: none;">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%;">Sign In</button>
+            </form>
+
+            <!-- Register Form (Hidden by default) -->
+            <form id="form-register" hidden>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Choose Username</label>
+                    <input type="text" id="reg-username" required style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label>Choose Password</label>
+                    <input type="password" id="reg-password" required style="width: 100%;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Role</label>
+                    <select id="reg-role" style="width: 100%;">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                        <!-- Admin disabled for self-registration -->
+                    </select>
+                </div>
+                <div id="reg-error" style="color: red; margin-bottom: 1rem; font-size: 0.875rem; display: none;"></div>
+
+                <button type="submit" class="btn-primary" style="width: 100%;">Create Account</button>
+            </form>
+
+            <div style="margin-top: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--text-muted);">
+                <button id="btn-close-login"
+                    style="background: none; border: none; color: #666; text-decoration: underline; cursor: pointer;">Continue
+                    as Guest</button>
+            </div>
+
+            <div style="margin-top: 1.5rem; text-align: center; font-size: 0.875rem; color: var(--text-muted);">
+                <p>Default Accounts:</p>
+                <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 0.5rem;">
+                    <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">admin</span>
+                    <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">teacher</span>
+                    <span style="background: #f1f5f9; padding: 0.25rem 0.5rem; border-radius: 0.25rem;">student</span>
+                </div>
+                <p style="margin-top: 0.25rem; font-size: 0.75rem;">(All passwords: username + "123")</p>
+            </div>
+        </div>
+    </div>
+
     <div id="overlay" class="overlay" hidden>
         <div style="background: white; padding: 3rem; border-radius: 1rem;">
             <div class="overlay-icon">✅</div>
@@ -451,7 +527,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=100"></script>
+    <script src="app.js?v=2.3"></script>
 </body>
 
 </html>

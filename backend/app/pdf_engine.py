@@ -72,7 +72,7 @@ def generate_worksheet(questions, output, include_answers: bool = False):
                 c.drawImage(img_reader, margin, current_y - display_h, width=display_w, height=display_h)
                 
                 # Add Question Number/Label
-                c.drawString(margin, current_y + 5, f"Q{i+1} ({q.question_number or '?'})")
+                c.drawString(margin, current_y + 5, f"Q{i+1} [ID: {q.id}] ({q.question_number or '?'})")
                 
                 current_y -= (display_h + 20) # Add spacing
             

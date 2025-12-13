@@ -7,7 +7,7 @@ import shutil
 def get_question(db: Session, question_id: int):
     return db.query(models.Question).filter(models.Question.id == question_id).first()
 
-from typing import Optional, List
+from typing import Optional, List, Union
 
 def get_questions(
     db: Session, 
@@ -17,22 +17,18 @@ def get_questions(
     subject: Optional[str] = None,
     year: Optional[int] = None,
     month: Optional[str] = None,
-    difficulty: Optional[models.DifficultyLevel] = None,
-    paper: Optional[str] = None,
-    tag_category: Optional[str] = None,
-    tag_name: Optional[str] = None
+    difficulty: Optional[Union[models.DifficultyLevel, List[models.DifficultyLevel]]] = None, # Allow List
+    tag_category: Optional[Union[str, List[str]]] = None, # Allow List
+    tag_name: Optional[Union[str, List[str]]] = None, # Allow List
+    id: Optional[int] = None
 ):
-    query = db.query(models.Question)
+    with open("query_debug.log", "a") as f:
+        f.write(f"GET_QUESTIONS: curr={curriculum}, sub={subject}, yr={year}, mth={month}, diff={difficulty}, cat={tag_category}, name={tag_name}, id={id}\n")
     
-    if tag_category or tag_name:
-        query = query.join(models.Question.tags)
-        if tag_category:
-            print(f"Filtering by Category: {tag_category}")
-            query = query.filter(models.Tag.category == tag_category)
-        if tag_name:
-            print(f"Filtering by Name: {tag_name}")
-            query = query.filter(models.Tag.name == tag_name)
-            
+    query = db.query(models.Question)
+
+    if id:
+        query = query.filter(models.Question.id == id)
     if curriculum:
         query = query.filter(models.Question.curriculum == curriculum)
     if subject:
@@ -41,14 +37,34 @@ def get_questions(
         query = query.filter(models.Question.year == year)
     if month:
         query = query.filter(models.Question.month == month)
-    if paper:
-        query = query.filter(models.Question.paper == paper)
+    
+    # Debug Logging for Filter Checks
+    # import sys
+    # print(f"Filtering Difficulty: {difficulty} (Type: {type(difficulty)})", file=sys.stderr)
+    
     if difficulty:
-        query = query.filter(models.Question.difficulty == difficulty)
+        if isinstance(difficulty, list):
+            query = query.filter(models.Question.difficulty.in_(difficulty))
+        else:
+            query = query.filter(models.Question.difficulty == difficulty)
+
+
+    if tag_category or tag_name:
+        query = query.join(models.Question.tags)
         
-    results = query.offset(skip).limit(limit).all()
-    print(f"DEBUG: get_questions filters: cat={tag_category}, name={tag_name}. Found {len(results)} items.")
-    return results
+        if tag_category:
+            if isinstance(tag_category, list):
+                query = query.filter(models.Tag.category.in_(tag_category))
+            else:
+                query = query.filter(models.Tag.category == tag_category)
+        
+        if tag_name:
+            if isinstance(tag_name, list):
+                query = query.filter(models.Tag.name.in_(tag_name))
+            else:
+                query = query.filter(models.Tag.name == tag_name)
+
+    return query.distinct().offset(skip).limit(limit).all()
 
 def create_question(db: Session, question: schemas.QuestionCreate, question_image_path: str, answer_image_path: str, tags: List[schemas.TagCreate] = []):
     db_question = models.Question(
@@ -167,8 +183,6 @@ def get_subjects(db: Session):
 def get_curriculums(db: Session):
     return db.query(models.Question.curriculum).distinct().all()
 
-def get_papers(db: Session):
-    return db.query(models.Question.paper).distinct().all()
 
 def update_tag(db: Session, tag_id: int, tag_update: schemas.TagCreate):
     db_tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
@@ -206,7 +220,6 @@ def get_distinct_values(
     subject: Optional[str] = None,
     year: Optional[int] = None,
     month: Optional[str] = None,
-    paper: Optional[str] = None,
     tag_category: Optional[str] = None
 ):
     """
@@ -214,9 +227,9 @@ def get_distinct_values(
     Supports columns in Question model and Tags.
     """
     if field == 'tag_category':
-        query = db.query(models.Tag.category).join(models.Question.tags)
+        query = db.query(models.Tag.category).join(models.Tag.questions)
     elif field == 'tag_name':
-        query = db.query(models.Tag.name).join(models.Question.tags)
+        query = db.query(models.Tag.name).join(models.Tag.questions)
     elif hasattr(models.Question, field):
         query = db.query(getattr(models.Question, field))
     else:
@@ -231,12 +244,20 @@ def get_distinct_values(
         query = query.filter(models.Question.year == year)
     if month:
         query = query.filter(models.Question.month == month)
-    if paper:
-        query = query.filter(models.Question.paper == paper)
     
-    # For tag filters, we might need more complex join logic if we are filtering BY tags
-    # For now, simplistic approach:
-    if tag_category and field != 'tag_category':
-         query = query.join(models.Question.tags).filter(models.Tag.category == tag_category)
+    # For tag filters
+    if tag_category:
+        if isinstance(tag_category, list):
+            if field == 'tag_name':
+                 query = query.filter(models.Tag.category.in_(tag_category))
+            else:
+                 query = query.join(models.Question.tags).filter(models.Tag.category.in_(tag_category))
+        else:
+            if field == 'tag_category':
+                query = query.filter(models.Tag.category == tag_category)
+            elif field == 'tag_name':
+                 query = query.filter(models.Tag.category == tag_category)
+            else:
+                 query = query.join(models.Question.tags).filter(models.Tag.category == tag_category)
     
     return [r[0] for r in query.distinct().all() if r[0] is not None]

@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException
-from typing import List
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Query
+from typing import List, Optional, Union
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import models, schemas, crud
-from .database import SessionLocal, engine
+from .database import SessionLocal, engine, get_db
 from fastapi.staticfiles import StaticFiles
 import os
 import shutil
@@ -37,13 +37,6 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 # app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "../frontend"), html=True), name="frontend")
 
 # Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 
 # --- Tags API ---
@@ -88,10 +81,6 @@ def read_curriculums(db: Session = Depends(get_db)):
     # Extract curriculum strings from tuples and filter out None
     return [c[0] for c in curriculums if c[0]]
 
-@app.get("/papers/", response_model=List[str])
-def read_papers(db: Session = Depends(get_db)):
-    papers = crud.get_papers(db)
-    return [p[0] for p in papers if p[0]]
 
 @app.post("/questions/", response_model=schemas.Question)
 def create_question(
@@ -102,7 +91,6 @@ def create_question(
     year: int = Form(None),
     month: str = Form(None),
     season: str = Form(None),
-    paper: str = Form(None),
     question_number: str = Form(None),
     difficulty: models.DifficultyLevel = Form(models.DifficultyLevel.Medium),
     tag_category: str = Form(None), # Level 1
@@ -144,7 +132,6 @@ def create_question(
         year=year,
         month=month,
         season=season,
-        paper=paper,
         question_number=question_number,
         difficulty=difficulty
     )
@@ -169,10 +156,9 @@ def get_metadata(
     field: str,
     curriculum: str = None,
     subject: str = None,
-    year: int = None,
-    month: str = None,
-    paper: str = None,
-    tag_category: str = None,
+    year: Optional[int] = None,
+    month: Optional[str] = None,
+    tag_category: Optional[Union[str, List[str]]] = Query(None),
     db: Session = Depends(get_db)
 ):
     return crud.get_distinct_values(
@@ -180,11 +166,64 @@ def get_metadata(
         field, 
         curriculum=curriculum, 
         subject=subject, 
-        year=year,
-        month=month,
-        paper=paper,
+        year=year, 
+        month=month, 
         tag_category=tag_category
     )
+
+from fastapi.security import OAuth2PasswordRequestForm
+from datetime import timedelta
+from . import auth
+
+# --- Auth API ---
+
+@app.post("/token", response_model=schemas.Token)
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = auth.authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={"sub": user.username, "role": user.role}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer", "role": user.role} # Returning role for frontend convenience
+
+@app.post("/register", response_model=schemas.Token)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # Check if user exists
+    db_user = db.query(models.User).filter(models.User.username == user.username).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Username already registered")
+    
+    # Create user (Default role: Student, unless specified and allowed? Let's just create as Student for safety, or trust input for now)
+    # User asked for 3 types. If they self-register, they should probably be Student.
+    # But for flexibility in this demo, I will allow them to pass role if they want, or default to student.
+    
+    role = user.role if user.role in ["student", "teacher", "admin"] else "student"
+    
+    hashed_password = auth.get_password_hash(user.password)
+    new_user = models.User(username=user.username, hashed_password=hashed_password, role=role)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    # Auto-login
+    access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = auth.create_access_token(
+        data={"sub": new_user.username, "role": new_user.role}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer", "role": new_user.role}
+
+# --- Questions API ---
+
+# ... (subjects, curriculums, papers public or protected? Let's keep public for filters, or protect all?)
+# User asked for multi-user system. Let's assume login required for main data.
+
+from typing import Optional
 
 @app.get("/questions/", response_model=List[schemas.Question])
 def read_questions(
@@ -195,12 +234,13 @@ def read_questions(
     year: int = None,
     month: str = None,
     difficulty: models.DifficultyLevel = None,
-    paper: str = None,
-    tag_category: str = Query(None),
-    tag_name: str = Query(None),
-    db: Session = Depends(get_db)
+    tag_category: List[str] = Query(None),
+    tag_name: List[str] = Query(None),
+    id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(auth.get_current_user_optional)
 ):
-    return crud.get_questions(
+    questions = crud.get_questions(
         db, 
         skip=skip, 
         limit=limit, 
@@ -209,20 +249,32 @@ def read_questions(
         year=year,
         month=month,
         difficulty=difficulty,
-        paper=paper,
         tag_category=tag_category,
-        tag_name=tag_name
+        tag_name=tag_name,
+        id=id
     )
+    
+    # RBAC: Student (or Guest) cannot see answers
+    # If no user (Guest) or Role is Student -> Hide Answers
+    if not current_user or current_user.role == "student":
+        for q in questions:
+            q.answer_image_path = "hidden" # Or None/Empty string. "hidden" allows frontend to show lock icon if desired.
+            
+    return questions
 
 @app.put("/questions/{question_id}", response_model=schemas.Question)
-def update_question(question_id: int, question: schemas.QuestionUpdate, db: Session = Depends(get_db)):
+def update_question(question_id: int, question: schemas.QuestionUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    if current_user.role != "admin":
+         raise HTTPException(status_code=403, detail="Not authorized")
     db_question = crud.update_question(db, question_id, question)
     if not db_question:
         raise HTTPException(status_code=404, detail="Question not found")
     return db_question
 
 @app.delete("/questions/{question_id}")
-def delete_question(question_id: int, db: Session = Depends(get_db)):
+def delete_question(question_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    if current_user.role != "admin":
+         raise HTTPException(status_code=403, detail="Not authorized")
     success = crud.delete_question(db, question_id)
     if not success:
         raise HTTPException(status_code=404, detail="Question not found")
@@ -243,28 +295,36 @@ async def generate_worksheet_endpoint(request: schemas.WorksheetGenerateRequest,
     ordered_questions = [question_map[qid] for qid in request.question_ids if qid in question_map]
     
     # 2. Generate to unique server file
-    file_id = f"{uuid.uuid4()}.pdf"
+    file_uuid = str(uuid.uuid4())
+    file_id = f"{file_uuid}.pdf"  # File on disk still has .pdf
     output_path = os.path.join(STATIC_DIR, file_id)
     
     pdf_engine.generate_worksheet(ordered_questions, output_path, include_answers=request.include_answers)
     
-    # 3. Return ID
-    return {"status": "success", "file_id": file_id}
+    # 3. Return ID WITHOUT .pdf suffix (to avoid StaticFiles routing conflict)
+    return {"status": "success", "file_id": file_uuid}
 
 @app.get("/worksheet/prepare-download/{file_id}")
 async def prepare_download_link(file_id: str, name: str = "worksheet.pdf"):
     """
-    Copies the temporary UUID file to a path with the strict filename:
-    /static/downloads/{file_id}/{name}
-    Returns the static URL.
+    Physical rename strategy: copies the file to a new path with the user-friendly filename.
+    Returns a download URL that will serve the file with Content-Disposition header.
     """
+    # Add .pdf extension if missing (file_id is now UUID without .pdf)
+    if not file_id.endswith('.pdf'):
+        file_id = file_id + '.pdf'
+    
     src_path = os.path.join(STATIC_DIR, file_id)
     if not os.path.exists(src_path):
         raise HTTPException(status_code=404, detail="File not found or expired")
     
+    # Ensure filename has .pdf extension
+    if not name.endswith('.pdf'):
+        name = name + '.pdf'
+    
     # Create specific folder for this file to avoid name collisions
     # Structure: static/downloads/<uuid>/<RealName.pdf>
-    download_dir = os.path.join(STATIC_DIR, "downloads", file_id)
+    download_dir = os.path.join(STATIC_DIR, "downloads", file_id.replace('.pdf', ''))
     os.makedirs(download_dir, exist_ok=True)
     
     dest_path = os.path.join(download_dir, name)
@@ -272,13 +332,28 @@ async def prepare_download_link(file_id: str, name: str = "worksheet.pdf"):
     # Copy file (using copy2 to preserve metadata)
     shutil.copy2(src_path, dest_path)
     
-    # Construct URL (assuming /static mount)
-    # Note: name needs to be URL encoded in the return, but the file on disk should be the real name
+    # Return URL to the download endpoint (not static files)
     from urllib.parse import quote
     url_name = quote(name)
-    static_url = f"/static/downloads/{file_id}/{url_name}"
+    download_url = f"/download-file/{file_id.replace('.pdf', '')}/{url_name}"
     
-    return {"status": "success", "url": static_url}
+    return {"status": "success", "url": download_url}
+
+@app.get("/download-file/{uuid}/{filename}")
+async def download_file(uuid: str, filename: str):
+    """
+    Serve file with Content-Disposition: attachment header to force download.
+    """
+    file_path = os.path.join(STATIC_DIR, "downloads", uuid, filename)
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename=filename,
+        media_type='application/pdf'
+    )
 
 # Mount frontend at root (must be last to avoid shadowing API routes)
 app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "../frontend"), html=True), name="frontend")

@@ -5,9 +5,21 @@ import enum
 
 # Association table for many-to-many relationship between Question and Tag
 question_tags = Table('question_tags', Base.metadata,
-    Column('question_id', Integer, ForeignKey('questions.id')),
-    Column('tag_id', Integer, ForeignKey('tags.id'))
+    Column('question_id', Integer, ForeignKey('questions.id', ondelete="CASCADE")),
+    Column('tag_id', Integer, ForeignKey('tags.id', ondelete="CASCADE"))
 )
+
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    TEACHER = "teacher"
+    STUDENT = "student"
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    role = Column(String, default="student") # Stored as string, validated by Enum in App schema
 
 class DifficultyLevel(str, enum.Enum):
     Easy = "Easy"
@@ -29,7 +41,6 @@ class Question(Base):
     year = Column(Integer, index=True)
     month = Column(String, index=True) # e.g., "June", "November"
     season = Column(String) # e.g., "May/June"
-    paper = Column(String) # e.g., "Paper 1"
     question_number = Column(String)
     difficulty = Column(Enum(DifficultyLevel), default=DifficultyLevel.Medium)
     

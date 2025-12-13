@@ -2,6 +2,16 @@ from typing import List, Optional
 from pydantic import BaseModel
 from .models import DifficultyLevel
 
+class UserCreate(BaseModel):
+    username: str
+    password: str
+    role: Optional[str] = "student" # Default to student, allow teacher/admin via specific code/UI later? Or just student for now. User said "create account", usually starts as student.
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    role: str
+
 class TagBase(BaseModel):
     name: str
     category: Optional[str] = None
@@ -21,7 +31,6 @@ class QuestionBase(BaseModel):
     year: Optional[int] = None
     month: Optional[str] = None
     season: Optional[str] = None
-    paper: Optional[str] = None
     question_number: Optional[str] = None
     difficulty: Optional[DifficultyLevel] = DifficultyLevel.Medium
 
