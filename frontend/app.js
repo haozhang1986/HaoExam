@@ -271,10 +271,12 @@ function updateUIByRole() {
 
     if (isAdmin) {
         document.getElementById('nav-upload').style.display = '';
+        document.getElementById('nav-zip-upload').style.display = '';
         document.getElementById('nav-manage').style.display = '';
         if (basketSection) basketSection.style.display = '';
     } else {
         document.getElementById('nav-upload').style.display = 'none';
+        document.getElementById('nav-zip-upload').style.display = 'none';
         document.getElementById('nav-manage').style.display = 'none';
         // Basket allowed for Teachers? Or only Admin too?
         // User said "only use admin account can upload and manage".
@@ -297,7 +299,19 @@ function checkLogin() {
 document.addEventListener('DOMContentLoaded', () => {
     checkLogin(); // Check auth first
     loadQuestions(); // Load initial questions
-    loadFilters();
+
+    // Load filters AFTER ensuring MultiSelectDropdown is available
+    // Use setTimeout to ensure multi-select.js has executed
+    setTimeout(() => {
+        if (typeof MultiSelectDropdown !== 'undefined') {
+            loadFilters();
+        } else {
+            console.error('MultiSelectDropdown not loaded!');
+            // Fallback: try again after a delay
+            setTimeout(() => loadFilters(), 500);
+        }
+    }, 100);
+
     updateBasketUI();
 
     // Managers are initialized at the bottom of the file (Lines 1670+) to ensure all classes are defined.
@@ -382,6 +396,7 @@ if (btnClearSearch && headerSearchId) {
 }
 
 document.getElementById('nav-upload').addEventListener('click', () => switchView('view-upload'));
+document.getElementById('nav-zip-upload').addEventListener('click', () => switchView('view-zip-upload'));
 document.getElementById('nav-manage').addEventListener('click', () => {
     switchView('view-manage');
     // Default to questions tab
@@ -410,67 +425,179 @@ document.getElementById('tab-questions').addEventListener('click', () => switchT
 document.getElementById('tab-tags').addEventListener('click', () => switchTab('tags'));
 
 // --- Filter Logic ---
+
+// === Cascading Filter Helper Functions ===
+
+// CRITICAL: Topic(s) → Subtopic UNION Logic
+async function updateSubtopicOptions(selectedTopics) {
+    if (!selectedTopics || selectedTopics.length === 0) {
+        // No topics selected - load all subtopics or clear
+        try {
+            const response = await fetch(`${API_BASE_URL}/metadata/distinct/subtopic`);
+            const allSubtopics = await response.json();
+            window.subtopicMultiSelect.setOptions(allSubtopics);
+        } catch (e) {
+            console.error('Error loading all subtopics:', e);
+            window.subtopicMultiSelect.setOptions([]);
+        }
+        return;
+    }
+
+    // Fetch subtopics for each selected topic and compute UNION
+    try {
+        const subtopicPromises = selectedTopics.map(topic =>
+            fetch(`${API_BASE_URL}/metadata/distinct/subtopic?topic=${encodeURIComponent(topic)}`)
+                .then(r => r.json())
+        );
+
+        const results = await Promise.all(subtopicPromises);
+        const unionSet = new Set();
+
+        results.forEach(subtopicArray => {
+            subtopicArray.forEach(sub => {
+                if (sub) unionSet.add(sub);
+            });
+        });
+
+        const unionArray = Array.from(unionSet).sort();
+        window.subtopicMultiSelect.setOptions(unionArray);
+
+        // Clear current subtopic selection if any selected values are no longer valid
+        const currentSelection = window.subtopicMultiSelect.getSelectedValues();
+        const validSelection = currentSelection.filter(s => unionArray.includes(s));
+        if (validSelection.length !== currentSelection.length) {
+            window.subtopicMultiSelect.setSelectedValues(validSelection);
+        }
+    } catch (e) {
+        console.error('Error computing subtopic UNION:', e);
+        window.subtopicMultiSelect.setOptions([]);
+    }
+}
+
+// Subject → Paper cascading
+async function updatePaperOptions(selectedSubject) {
+    if (!selectedSubject) return;
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/metadata/distinct/paper_number?subject=${encodeURIComponent(selectedSubject)}`);
+        const papers = await response.json();
+        const paperSelect = document.getElementById('filter-paper');
+
+        paperSelect.innerHTML = '<option value="">All</option>';
+        papers.forEach(p => {
+            if (p) {
+                const option = document.createElement('option');
+                option.value = p;
+                option.textContent = p;
+                paperSelect.appendChild(option);
+            }
+        });
+    } catch (e) {
+        console.error('Error loading paper options:', e);
+    }
+}
+
+// Mandatory filter change handler (reset dependent filters)
+async function handleMandatoryFilterChange(filterId) {
+    // When Curriculum or Subject changes, reset all other filters
+    if (filterId === 'filter-curriculum' || filterId === 'filter-subject') {
+        // Reset single-select filters
+        const resetIds = ['filter-paper', 'filter-year', 'filter-month', 'filter-question-type', 'filter-difficulty'];
+        resetIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+
+        // Reset multi-select filters
+        if (window.topicMultiSelect) {
+            window.topicMultiSelect.clearAll();
+        }
+        if (window.subtopicMultiSelect) {
+            window.subtopicMultiSelect.clearAll();
+        }
+
+        // Reload dependent cascading options
+        if (filterId === 'filter-subject') {
+            const subject = document.getElementById('filter-subject').value;
+            await updatePaperOptions(subject);
+        }
+    }
+}
+
+// === End Cascading Functions ===
+
 async function loadFilters() {
     try {
-        // Load Curriculums
-        const currResponse = await fetch(`${API_BASE_URL}/curriculums/`);
-        const curriculums = await currResponse.json();
+        // Load static Curriculum options
         const currSelect = document.getElementById('filter-curriculum');
-        // Keep "All" option
         currSelect.innerHTML = '<option value="">All</option>';
-        curriculums.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c;
-            option.textContent = c;
-            currSelect.appendChild(option);
+        const currValues = await fetch(`${API_BASE_URL}/metadata/distinct/curriculum`).then(r => r.json());
+        currValues.forEach(c => {
+            if (c) {
+                const option = document.createElement('option');
+                option.value = c;
+                option.textContent = c;
+                currSelect.appendChild(option);
+            }
         });
 
-        // Load Subjects
-        const subjResponse = await fetch(`${API_BASE_URL}/subjects/`);
-        const subjects = await subjResponse.json();
+        // Load static Subject options
         const subjSelect = document.getElementById('filter-subject');
-        // Keep "All" option
         subjSelect.innerHTML = '<option value="">All</option>';
-        subjects.forEach(s => {
-            const option = document.createElement('option');
-            option.value = s;
-            option.textContent = s;
-            subjSelect.appendChild(option);
+        const subjValues = await fetch(`${API_BASE_URL}/metadata/distinct/subject`).then(r => r.json());
+        subjValues.forEach(s => {
+            if (s) {
+                const option = document.createElement('option');
+                option.value = s;
+                option.textContent = s;
+                subjSelect.appendChild(option);
+            }
         });
 
+        // Initialize Multi-Select Dropdowns
+        window.topicMultiSelect = new MultiSelectDropdown('filter-topic', {
+            placeholder: 'Select topics...',
+            onChange: async (selectedTopics) => {
+                // CRITICAL: Topic(s) → Subtopic UNION Logic
+                await updateSubtopicOptions(selectedTopics);
+                loadQuestions(); // Reload questions when topic changes
+            }
+        });
 
-        // Auto-refresh questions on filter change
+        window.subtopicMultiSelect = new MultiSelectDropdown('filter-subtopic', {
+            placeholder: 'Select subtopics...',
+            onChange: () => {
+                loadQuestions(); // Reload questions when subtopic changes
+            }
+        });
+
+        // Filter change listeners for single-select filters
         const filterIds = [
-            'filter-curriculum', 'filter-subject', 'filter-year',
-            'filter-month', 'filter-difficulty',
-            'filter-tag-category', 'filter-tag-name',
+            'filter-curriculum', 'filter-subject', 'filter-paper',
+            'filter-year', 'filter-month', 'filter-question-type', 'filter-difficulty'
         ];
 
         filterIds.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                // For text input, use 'input' event (maybe debounce?)
-                // For Selects, use 'change'
-                const eventType = el.tagName === 'INPUT' ? 'input' : 'change';
-
-                el.addEventListener(eventType, () => {
-                    // If user selects a filter, clear the ID search box
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', async (e) => {
+                    // Clear ID search on filter change
                     const headerSearch = document.getElementById('header-search-id');
                     if (headerSearch && headerSearch.value) {
                         headerSearch.value = '';
-
                     }
 
-                    // Check which view is active
-                    const viewManage = document.getElementById('view-manage');
-                    const isManageActive = viewManage && viewManage.classList.contains('active');
-
-                    if (isManageActive) {
-                        currentFilters = getFilters();
-                        loadManageView();
-                    } else {
-                        loadQuestions();
+                    // Handle mandatory filter resets (Curriculum/Subject changes)
+                    if (id === 'filter-curriculum' || id === 'filter-subject') {
+                        await handleMandatoryFilterChange(id);
                     }
+
+                    // Subject → Paper cascading
+                    if (id === 'filter-subject') {
+                        await updatePaperOptions(e.target.value);
+                    }
+
+                    loadQuestions();
                 });
             }
         });
@@ -479,33 +606,62 @@ async function loadFilters() {
         const searchIdInput = document.getElementById('header-search-id');
         // ID search input listener (attached in ID search section above)
 
-        // Upload Managers
-        const tagsResponse = await fetch(`${API_BASE_URL}/tags/`);
-        const tags = await tagsResponse.json();
+        // Load dynamic filter options from database
+        try {
+            // Load Years
+            const yearResponse = await fetch(`${API_BASE_URL}/metadata/distinct/year`);
+            const years = await yearResponse.json();
+            const yearSelect = document.getElementById('filter-year');
+            yearSelect.innerHTML = '<option value="">All</option>';
+            years.forEach(y => {
+                if (y) {
+                    const option = document.createElement('option');
+                    option.value = y;
+                    option.textContent = y;
+                    yearSelect.appendChild(option);
+                }
+            });
 
-        const categorySelect = document.getElementById('filter-tag-category');
-        const nameSelect = document.getElementById('filter-tag-name');
+            // Load Months
+            const monthResponse = await fetch(`${API_BASE_URL}/metadata/distinct/month`);
+            const months = await monthResponse.json();
+            const monthSelect = document.getElementById('filter-month');
+            monthSelect.innerHTML = '<option value="">All</option>';
+            months.forEach(m => {
+                if (m) {
+                    const option = document.createElement('option');
+                    option.value = m;
+                    option.textContent = m;
+                    monthSelect.appendChild(option);
+                }
+            });
 
-        // Reset options
-        categorySelect.innerHTML = '<option value="">All</option>';
-        nameSelect.innerHTML = '<option value="">All</option>';
+            // Load Paper Numbers
+            const paperResponse = await fetch(`${API_BASE_URL}/metadata/distinct/paper_number`);
+            const papers = await paperResponse.json();
+            const paperSelect = document.getElementById('filter-paper');
+            paperSelect.innerHTML = '<option value="">All</option>';
+            papers.forEach(p => {
+                if (p) {
+                    const option = document.createElement('option');
+                    option.value = p;
+                    option.textContent = p;
+                    paperSelect.appendChild(option);
+                }
+            });
 
-        const categories = new Set(tags.map(t => t.category));
-        const names = new Set(tags.map(t => t.name));
+            // Load Topics into Multi-Select
+            const topicResponse = await fetch(`${API_BASE_URL}/metadata/distinct/topic`);
+            const topics = await topicResponse.json();
+            window.topicMultiSelect.setOptions(topics);
 
-        categories.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c;
-            option.textContent = c;
-            categorySelect.appendChild(option);
-        });
-
-        names.forEach(n => {
-            const option = document.createElement('option');
-            option.value = n;
-            option.textContent = n;
-            nameSelect.appendChild(option);
-        });
+            // Load Subtopics into Multi-Select
+            const subtopicResponse = await fetch(`${API_BASE_URL}/metadata/distinct/subtopic`);
+            const subtopics = await subtopicResponse.json();
+            window.subtopicMultiSelect.setOptions(subtopics);
+        } catch (e) {
+            console.error("Error loading dynamic filters:", e);
+        }
 
     } catch (e) {
         console.error("Error loading filters:", e);
@@ -515,24 +671,21 @@ async function loadFilters() {
 function getFilters() {
     const getValue = (id) => {
         const el = document.getElementById(id);
-        if (!el) return '';
-        // Check for multi-select
-        if (el.multiple) {
-            const values = Array.from(el.selectedOptions).map(opt => opt.value).filter(v => v);
-            return values.length > 0 ? values : '';
-        }
-        return el.value;
+        return el ? el.value : '';
     };
 
     return {
         id: getValue('header-search-id'),
         curriculum: getValue('filter-curriculum'),
         subject: getValue('filter-subject'),
+        paper_number: getValue('filter-paper'),
         year: getValue('filter-year'),
         month: getValue('filter-month'),
+        question_type: getValue('filter-question-type'),
         difficulty: getValue('filter-difficulty'),
-        tag_category: getValue('filter-tag-category'),
-        tag_name: getValue('filter-tag-name')
+        // Multi-select filters return arrays
+        topic: window.topicMultiSelect ? window.topicMultiSelect.getSelectedValues() : [],
+        subtopic: window.subtopicMultiSelect ? window.subtopicMultiSelect.getSelectedValues() : []
     };
 }
 
@@ -649,23 +802,64 @@ function createQuestionCard(question) {
 
     const isSelected = basket.has(question.id);
 
-    // Deduplicate tags
-    const uniqueTags = [];
-    const seenTags = new Set();
-    if (question.tags) {
-        question.tags.forEach(tag => {
-            const key = `${tag.category}:${tag.name}`;
-            if (!seenTags.has(key)) {
-                seenTags.add(key);
-                uniqueTags.push(tag);
-            }
-        });
+    // Build metadata badges using Question fields directly
+    const badges = [];
+
+    // Paper Number badge
+    if (question.paper_number) {
+        badges.push(`<span class="tag" style="background-color: #3b82f6; color: white;">📄 ${question.paper_number}</span>`);
     }
 
-    // Format tags
-    const tagBadges = uniqueTags.map(tag =>
-        `<span class="tag">${tag.category}: ${tag.name}</span>`
-    ).join('');
+    // Topic badge
+    if (question.topic) {
+        badges.push(`<span class="tag" style="background-color: #8b5cf6;">📚 ${question.topic}</span>`);
+    }
+
+    // Subtopic badge
+    if (question.subtopic) {
+        badges.push(`<span class="tag" style="background-color: #6366f1;">📖 ${question.subtopic}</span>`);
+    }
+
+    // Question Type badge
+    if (question.question_type) {
+        badges.push(`<span class="tag" style="background-color: #10b981; color: white;">✏️ ${question.question_type}</span>`);
+    }
+
+    // Difficulty badge
+    if (question.difficulty) {
+        const difficultyColors = {
+            'Easy': '#22c55e',
+            'Medium': '#f59e0b',
+            'Hard': '#ef4444'
+        };
+        const color = difficultyColors[question.difficulty] || '#6b7280';
+        badges.push(`<span class="tag" style="background-color: ${color}; color: white;">⭐ ${question.difficulty}</span>`);
+    }
+
+    // Subtopic Details badges (learning outcomes)
+    if (question.subtopic_details) {
+        let details = [];
+        try {
+            // Parse JSON string to array
+            details = typeof question.subtopic_details === 'string'
+                ? JSON.parse(question.subtopic_details)
+                : question.subtopic_details;
+        } catch (e) {
+            console.error('Error parsing subtopic_details:', e);
+        }
+
+        if (Array.isArray(details) && details.length > 0) {
+            // Add a separator
+            badges.push(`<div style="width: 100%; height: 1px; background: #e5e7eb; margin: 0.5rem 0;"></div>`);
+
+            // Add learning outcome badges (smaller, gray)
+            details.forEach(detail => {
+                badges.push(`<span class="tag" style="background-color: #f3f4f6; color: #1f2937; font-size: 0.75rem; padding: 0.25rem 0.5rem;">🎯 ${detail}</span>`);
+            });
+        }
+    }
+
+    const tagBadges = badges.join('');
 
     // Role-Based Button Visibility
     let showAnswerBtn = '';
@@ -1417,19 +1611,26 @@ class CascadingDropdownManager {
 
     initListeners() {
 
-        const { curriculum, subject, year, month, tag_category, tag_name } = this.config;
+        const { curriculum, subject, paper, year, month, tag_category, tag_name } = this.config;
 
         if (!curriculum) console.error("Config missing: curriculum");
         if (!subject) console.error("Config missing: subject");
-        if (!year) console.error("Config missing: year");
-        if (!month) console.error("Config missing: month");
-        if (!tag_category) console.error("Config missing: tag_category");
+        // paper is optional? well, for this flow it is key.
 
         this.attachListener(curriculum, () => this.updateOptions('subject'));
         this.attachListener(subject, () => {
+            this.updateOptions('paper');
             this.updateOptions('year');
-            this.updateOptions('tag_category'); // Topic depends on Subject
+            // Topic depends on Paper (primarily) or Subject (fallback)?
+            // If Paper depends on Subject, and Topic depends on Paper.
+            // If I change Subject, Paper changes. Selection clears. Topic should clear or update.
+            // updateOptions('paper') will clear it.
         });
+
+        this.attachListener(paper, () => {
+            this.updateOptions('tag_category'); // Paper -> Topic
+        });
+
         this.attachListener(year, () => this.updateOptions('month'));
         this.attachListener(tag_category, () => this.updateOptions('tag_name'));
     }
@@ -1446,6 +1647,7 @@ class CascadingDropdownManager {
     async updateOptions(targetField) {
         const targetIdMap = {
             'subject': this.config.subject,
+            'paper': this.config.paper,
             'year': this.config.year,
             'month': this.config.month,
             'tag_category': this.config.tag_category,
@@ -1457,10 +1659,9 @@ class CascadingDropdownManager {
             return;
         }
 
-        // Build query params from current values
         const params = new URLSearchParams();
         // ...
-        const { curriculum, subject, year, month, tag_category } = this.config;
+        const { curriculum, subject, paper, year, month, tag_category } = this.config;
 
         const addParam = (key, id) => {
             const el = document.getElementById(id);
@@ -1480,18 +1681,50 @@ class CascadingDropdownManager {
         };
 
         // Hierarchy assumption: simpler fields depend on broader ones
-        addParam('curriculum', curriculum);
-        if (targetField !== 'subject') addParam('subject', subject);
 
-        // Time filters apply to Papers, but NOT to Tags (Taxonomy is global)
+        // SPECIAL LOGIC: For Tag Updates in Input Forms (Upload/Edit), we want ALL tags.
+        // The DB contains "unused" tags that are not linked to any Question.
+        // If we filter by Subject/Year, the DB will try to find "Tags used in Questions of Subject X", which returns 0.
+        // So for Input Forms, we SKIP question-related filters when fetching Tags.
+
         const isTagUpdate = targetField === 'tag_category' || targetField === 'tag_name';
+        const isInputForm = this.config.subject && (this.config.subject.startsWith('input-') || this.config.subject.startsWith('edit-'));
 
-        if (!isTagUpdate) {
-            if (targetField !== 'year') addParam('year', year);
-        }
+        if (isTagUpdate && isInputForm) {
+            // UPDATED LOGIC:
+            // Since we added `subject` and `paper` to the Tags table, we CAN and SHOULD filter by them
+            // when editing/uploading, so that we only see relevant tags (e.g. Physics P1 tags).
+            // We still skip `year` and `month` because Tags are timeless.
 
-        if (targetField === 'tag_name') {
-            addParam('tag_category', tag_category);
+            addParam('curriculum', curriculum);
+            addParam('subject', subject);
+            addParam('paper', paper); // Ensure paper is passed!
+
+            // However, we MUST respect Tag Hierarchy (Category -> Name)
+            if (targetField === 'tag_name') {
+                addParam('tag_category', tag_category);
+            }
+        } else {
+            // Standard Logic (Browsing / Filtering) OR Non-Tag Updates
+            addParam('curriculum', curriculum);
+            if (targetField !== 'subject') addParam('subject', subject);
+
+            if (!isTagUpdate) {
+                if (targetField !== 'year') addParam('year', year);
+            } else {
+                // For browsing tags (Filter Sidebar), we also want to filter by Paper if selected
+                // The 'paper' param is added below generically? No, wait.
+            }
+
+            // Generic Paper adder (moved here or globally?)
+            // We need to ensure 'paper' is added for everyone except when target is subject/paper itself
+            if (targetField !== 'paper' && targetField !== 'subject' && targetField !== 'curriculum') {
+                addParam('paper', paper);
+            }
+
+            if (targetField === 'tag_name') {
+                addParam('tag_category', tag_category);
+            }
         }
 
         try {
@@ -1561,143 +1794,33 @@ class CascadingDropdownManager {
 
     // Trigger initial updates based on default values
     refreshAll() {
-        const { curriculum, subject, year, month, tag_category, tag_name } = this.config;
+        const { curriculum, subject, paper, year, month, tag_category, tag_name } = this.config;
 
         // Trigger updates in order of hierarchy
         if (curriculum) this.updateOptions('subject');
         if (subject) {
+            this.updateOptions('paper'); // Subject -> Paper
             this.updateOptions('year');
-            this.updateOptions('tag_category');
+            // tag_category updated via Paper now ?? Or Subject?
+            // User said: Curriculum->Subject->Paper No->Topic
+            // So if Paper is selected, update Topic.
+            // If Paper is NOT selected (e.g. browsing all), maybe show all?
+            // But let's follow the chain: Subject->Paper
+        }
+        if (paper) {
+            this.updateOptions('tag_category'); // Paper -> Topic
         }
         if (year) this.updateOptions('month');
         if (tag_category) this.updateOptions('tag_name');
     }
 }
 
-
-// --- MultiSelect Dropdown Component ---
-class MultiSelectDropdown {
-    constructor(selectId) {
-        this.selectInfo = document.getElementById(selectId);
-        if (!this.selectInfo) return;
-
-        this.selectInfo.multiple = true; // Force underlying select to likely handle multiple
-        this.selectInfo.style.display = 'none'; // Hide original
-
-        this.container = document.createElement('div');
-        this.container.className = 'multiselect-container';
-
-        this.btn = document.createElement('button');
-        this.btn.className = 'multiselect-btn';
-        this.btn.type = 'button';
-        this.btn.textContent = 'All'; // Default
-        this.btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.toggle();
-        });
-
-        this.dropdown = document.createElement('div');
-        this.dropdown.className = 'multiselect-dropdown';
-        this.dropdown.hidden = true;
-
-        // Click outside to close
-        document.addEventListener('click', (e) => {
-            if (!this.container.contains(e.target)) {
-                this.dropdown.hidden = true;
-            }
-        });
-
-        this.container.appendChild(this.btn);
-        this.container.appendChild(this.dropdown);
-
-        this.selectInfo.parentNode.insertBefore(this.container, this.selectInfo.nextSibling); // Insert after select
-
-        // Link instance for external refresh
-        this.selectInfo.multiSelectInstance = this;
-
-        this.refresh();
-    }
-
-    toggle() {
-        this.dropdown.hidden = !this.dropdown.hidden;
-    }
-
-    refresh() {
-        // Build checkboxes from select options
-        this.dropdown.innerHTML = '';
-        const options = Array.from(this.selectInfo.options);
-
-        let selectedCount = 0;
-        let selectedLabels = [];
-
-        options.forEach(opt => {
-            if (!opt.value || opt.value === '__new__') return; // Skip placeholders
-
-            const item = document.createElement('label');
-            item.className = 'multiselect-item';
-
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.value = opt.value;
-            checkbox.checked = opt.selected;
-
-            checkbox.addEventListener('change', () => {
-                opt.selected = checkbox.checked;
-                this.updateButton();
-                // Trigger change on original select
-                this.selectInfo.dispatchEvent(new Event('change'));
-            });
-
-            if (opt.selected) {
-                selectedCount++;
-                selectedLabels.push(opt.text);
-            }
-
-            item.appendChild(checkbox);
-            item.appendChild(document.createTextNode(opt.text));
-            this.dropdown.appendChild(item);
-        });
-
-        this.updateButton();
-    }
-
-    updateButton() {
-        const selected = Array.from(this.selectInfo.selectedOptions).filter(o => o.value);
-        if (selected.length === 0) {
-            this.btn.textContent = 'All';
-            this.btn.classList.remove('active');
-        } else if (selected.length <= 2) {
-            this.btn.textContent = selected.map(o => o.text).join(', ');
-            this.btn.classList.add('active');
-        } else {
-            this.btn.textContent = `${selected.length} Selected`;
-            this.btn.classList.add('active');
-        }
-    }
-}
-
 // Initialize Managers
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        // Filter Manager
-        const filterManager = new CascadingDropdownManager({
-            curriculum: 'filter-curriculum',
-            subject: 'filter-subject',
-            year: 'filter-year',
-            month: 'filter-month',
-            tag_category: 'filter-tag-category',
-            tag_name: 'filter-tag-name'
-        });
-        window.filterManager = filterManager; // Global access
-
-        // Initialize Multi-Select support
-        const msFields = ['filter-difficulty', 'filter-tag-category', 'filter-tag-name'];
-        msFields.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) new MultiSelectDropdown(id);
-        });
-
-        filterManager.refreshAll();
+        // Filter Manager (removed - we're now using direct Question fields, not cascading tags)
+        // We keep the upload/edit managers which still use the old tag system
+        // Note: Main filters (filter-topic, filter-subtopic) are populated via loadFilters() function
 
         // Upload Manager
         // Note: input-month logic is currently custom (seasonal). 
@@ -1705,6 +1828,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const uploadManager = new CascadingDropdownManager({
             curriculum: 'input-curriculum',
             subject: 'input-subject',
+            paper: 'input-paper',
             year: 'input-year',
             month: 'input-month', // Be careful with conflict
             tag_category: 'input-tag-category', // Topic
@@ -1718,6 +1842,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const editManager = new CascadingDropdownManager({
             curriculum: 'edit-curriculum',
             subject: 'edit-subject',
+            paper: 'edit-paper',
             year: 'edit-year',
             month: 'edit-month',
             tag_category: 'edit-tag-category',

@@ -159,6 +159,9 @@ def get_metadata(
     year: Optional[int] = None,
     month: Optional[str] = None,
     tag_category: Optional[Union[str, List[str]]] = Query(None),
+    # Add support for Topic→Subtopic cascading
+    topic: Optional[Union[str, List[str]]] = Query(None),
+    paper_number: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     return crud.get_distinct_values(
@@ -168,7 +171,9 @@ def get_metadata(
         subject=subject, 
         year=year, 
         month=month, 
-        tag_category=tag_category
+        tag_category=tag_category,
+        topic=topic,
+        paper_number=paper_number
     )
 
 from fastapi.security import OAuth2PasswordRequestForm
@@ -237,6 +242,11 @@ def read_questions(
     tag_category: List[str] = Query(None),
     tag_name: List[str] = Query(None),
     id: Optional[int] = None,
+    # ExamSlicer fields - multi-select support
+    paper_number: str = None,
+    topic: List[str] = Query(None),  # Multi-select support
+    subtopic: List[str] = Query(None),  # Multi-select support
+    question_type: str = None,
     db: Session = Depends(get_db),
     current_user: Optional[models.User] = Depends(auth.get_current_user_optional)
 ):
@@ -251,7 +261,11 @@ def read_questions(
         difficulty=difficulty,
         tag_category=tag_category,
         tag_name=tag_name,
-        id=id
+        id=id,
+        paper_number=paper_number,
+        topic=topic,
+        subtopic=subtopic,
+        question_type=question_type
     )
     
     # RBAC: Student (or Guest) cannot see answers
@@ -279,6 +293,82 @@ def delete_question(question_id: int, db: Session = Depends(get_db), current_use
     if not success:
         raise HTTPException(status_code=404, detail="Question not found")
     return {"status": "success"}
+
+# --- ZIP Ingestion API ---
+
+@app.post("/api/v1/ingest/zip")
+async def ingest_zip_file(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    Upload and process a ZIP file containing ExamSlicer output
+    Only admins can upload
+    """
+    # Check permission
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can upload ZIP files")
+    
+    # Validate file type
+    if not file.filename.endswith('.zip'):
+        raise HTTPException(status_code=400, detail="File must be a ZIP archive")
+    
+    # Save uploaded file temporarily
+    import tempfile
+    from .zip_ingest import ZipIngestor
+    
+    temp_zip = None
+    try:
+        # Create temporary file with proper cleanup
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as temp_file:
+            temp_zip = temp_file.name
+            # Read and write in chunks to handle large files
+            shutil.copyfileobj(file.file, temp_file)
+        
+        print(f"\n{'='*60}")
+        print(f"📦 ZIP Upload: {file.filename}")
+        print(f"👤 Uploaded by: {current_user.username}")
+        print(f"{'='*60}")
+        
+        # Process the ZIP file
+        ingestor = ZipIngestor()
+        result = ingestor.ingest_zip(temp_zip)
+        
+        print(f"\n📊 INGESTION RESULTS")
+        print(f"{'='*60}")
+        print(f"✅ Successfully created: {result['stats']['created']}")
+        print(f"🏷️  New tags created:    {result['stats']['tags_created']}")
+        print(f"❌ Errors:              {result['stats']['errors']}")
+        print(f"{'='*60}\n")
+        
+        return {
+            "status": "success",
+            "message": f"Successfully imported {result['stats']['created']} questions",
+            "stats": result['stats']
+        }
+        
+    except Exception as e:
+        import traceback
+        error_msg = str(e)
+        traceback_str = traceback.format_exc()
+        
+        print(f"\n❌ ERROR during ZIP ingestion:")
+        print(traceback_str)
+        
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process ZIP file: {error_msg}"
+        )
+    
+    finally:
+        # Cleanup temporary ZIP file
+        if temp_zip and os.path.exists(temp_zip):
+            try:
+                os.unlink(temp_zip)
+            except:
+                pass
+
 
 from fastapi import Response
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse

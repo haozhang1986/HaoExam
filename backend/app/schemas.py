@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from .models import DifficultyLevel
 
 class UserCreate(BaseModel):
@@ -33,6 +33,12 @@ class QuestionBase(BaseModel):
     season: Optional[str] = None
     question_number: Optional[str] = None
     difficulty: Optional[DifficultyLevel] = DifficultyLevel.Medium
+    # ExamSlicer Fields
+    paper_number: Optional[str] = None
+    question_type: Optional[str] = None
+    topic: Optional[str] = None
+    subtopic: Optional[str] = None
+    subtopic_details: Optional[List[str]] = None  # List of learning outcomes
 
 class QuestionCreate(QuestionBase):
     # Image paths will be handled separately or passed here after upload
@@ -49,6 +55,19 @@ class Question(QuestionBase):
 
     class Config:
         orm_mode = True
+    
+    @validator('subtopic_details', pre=True)
+    def parse_subtopic_details(cls, v):
+        """Convert JSON string to list if needed"""
+        if v is None:
+            return None
+        if isinstance(v, str):
+            import json
+            try:
+                return json.loads(v)
+            except:
+                return None
+        return v
 
 class WorksheetGenerateRequest(BaseModel):
     question_ids: List[int]

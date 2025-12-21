@@ -20,10 +20,15 @@ def get_questions(
     difficulty: Optional[Union[models.DifficultyLevel, List[models.DifficultyLevel]]] = None, # Allow List
     tag_category: Optional[Union[str, List[str]]] = None, # Allow List
     tag_name: Optional[Union[str, List[str]]] = None, # Allow List
-    id: Optional[int] = None
+    id: Optional[int] = None,
+    # ExamSlicer fields - now support multi-select
+    paper_number: Optional[str] = None,
+    topic: Optional[Union[str, List[str]]] = None,  # Multi-select support
+    subtopic: Optional[Union[str, List[str]]] = None,  # Multi-select support
+    question_type: Optional[str] = None
 ):
     with open("query_debug.log", "a") as f:
-        f.write(f"GET_QUESTIONS: curr={curriculum}, sub={subject}, yr={year}, mth={month}, diff={difficulty}, cat={tag_category}, name={tag_name}, id={id}\n")
+        f.write(f"GET_QUESTIONS: curr={curriculum}, sub={subject}, yr={year}, mth={month}, diff={difficulty}, cat={tag_category}, name={tag_name}, id={id}, paper={paper_number}, topic={topic}, subtopic={subtopic}, qtype={question_type}\n")
     
     query = db.query(models.Question)
 
@@ -37,6 +42,27 @@ def get_questions(
         query = query.filter(models.Question.year == year)
     if month:
         query = query.filter(models.Question.month == month)
+    
+    # ExamSlicer field filters with multi-select support
+    if paper_number:
+        query = query.filter(models.Question.paper_number == paper_number)
+    
+    if topic:
+        if isinstance(topic, list):
+            if len(topic) > 0:  # Only apply filter if list is not empty
+                query = query.filter(models.Question.topic.in_(topic))
+        else:
+            query = query.filter(models.Question.topic == topic)
+    
+    if subtopic:
+        if isinstance(subtopic, list):
+            if len(subtopic) > 0:  # Only apply filter if list is not empty
+                query = query.filter(models.Question.subtopic.in_(subtopic))
+        else:
+            query = query.filter(models.Question.subtopic == subtopic)
+    
+    if question_type:
+        query = query.filter(models.Question.question_type == question_type)
     
     # Debug Logging for Filter Checks
     # import sys
@@ -220,21 +246,42 @@ def get_distinct_values(
     subject: Optional[str] = None,
     year: Optional[int] = None,
     month: Optional[str] = None,
-    tag_category: Optional[str] = None
+    tag_category: Optional[str] = None,
+    paper: Optional[str] = None,
+    # Add support for Topic→Subtopic cascading
+    topic: Optional[Union[str, List[str]]] = None,
+    paper_number: Optional[str] = None
 ):
     """
     Get distinct values for a specific field, filtered by other fields.
     Supports columns in Question model and Tags.
     """
+    # Base Query
     if field == 'tag_category':
-        query = db.query(models.Tag.category).join(models.Tag.questions)
+        query = db.query(models.Tag.category)
     elif field == 'tag_name':
-        query = db.query(models.Tag.name).join(models.Tag.questions)
+        query = db.query(models.Tag.name)
+    elif field == 'paper':
+        # Paper can be on Question or Tag... 
+        # But User wants "Paper No" dropdown.
+        # Questions have "question_number", but that's like "1(a)".
+        # Tags now have "paper" (e.g. "1").
+        # If field is "paper", we should probably return distinct models.Tag.paper
+        # BUT wait, the Question model doesn't have "paper_number" explicitly as a column (only question_number).
+        # We might need to rely on Tag.paper for the dropdown if we want to filter Topics by it.
+        query = db.query(models.Tag.paper)
     elif hasattr(models.Question, field):
         query = db.query(getattr(models.Question, field))
     else:
         return []
 
+    # Check if we need to filter by question attributes
+    has_question_filters = any([curriculum, subject, year, month, topic, paper_number])
+    
+    # If filtering by question attributes, we MUST join questions (for tag fields)
+    if field in ['tag_category', 'tag_name', 'paper'] and has_question_filters:
+        query = query.join(models.Tag.questions)
+    
     # Apply filters
     if curriculum:
         query = query.filter(models.Question.curriculum == curriculum)
@@ -245,19 +292,58 @@ def get_distinct_values(
     if month:
         query = query.filter(models.Question.month == month)
     
+    # CRITICAL: Topic filter for cascading (e.g., get subtopics for selected topics)
+    if topic:
+        if isinstance(topic, list):
+            if len(topic) > 0:
+                query = query.filter(models.Question.topic.in_(topic))
+        else:
+            query = query.filter(models.Question.topic == topic)
+    
+    # Paper number filter
+    if paper_number:
+        query = query.filter(models.Question.paper_number == paper_number)
+    
+    # Filter by Paper (if provided)
+    if paper:
+        if field in ['tag_category', 'tag_name']:
+             query = query.filter(models.Tag.paper == paper)
+        elif hasattr(models.Question, field):
+             query = query.join(models.Question.tags).filter(models.Tag.paper == paper)
+    
+    # Filter by Subject (if provided) for Tags
+    # Critical: If we are in "Input Mode" (has_question_filters is False/we force it), 
+    # we want to filter Tags by the selected Subject dropdown, NOT by joining Questions.
+    # But get_distinct_values assumes 'subject' param implies Models.Question.subject by default.
+    # We need to distinguish.
+    # Actually, if has_question_filters is True, we joined Question.
+    # If it is False, we didn't.
+    # BUT, if we want to filter Tags by Subject from the Tag table, we need to apply it to models.Tag.subject.
+    
+    if subject and field in ['tag_category', 'tag_name']:
+        # If we joined questions, we already filtered by Question.subject.
+        # But for correct data population, Question.subject likely matches Tag.subject.
+        # However, for INPUT mode (uploading new q), we don't join questions.
+        # So we MUST filter models.Tag.subject if the column exists.
+        # We just added it.
+        if hasattr(models.Tag, 'subject'):
+             query = query.filter(models.Tag.subject == subject)
+    
     # For tag filters
     if tag_category:
         if isinstance(tag_category, list):
             if field == 'tag_name':
                  query = query.filter(models.Tag.category.in_(tag_category))
             else:
-                 query = query.join(models.Question.tags).filter(models.Tag.category.in_(tag_category))
+                 if field not in ['tag_category', 'tag_name', 'paper']:
+                     query = query.join(models.Question.tags).filter(models.Tag.category.in_(tag_category))
         else:
             if field == 'tag_category':
                 query = query.filter(models.Tag.category == tag_category)
             elif field == 'tag_name':
                  query = query.filter(models.Tag.category == tag_category)
             else:
-                 query = query.join(models.Question.tags).filter(models.Tag.category == tag_category)
+                 if field not in ['tag_category', 'tag_name', 'paper']:
+                    query = query.join(models.Question.tags).filter(models.Tag.category == tag_category)
     
     return [r[0] for r in query.distinct().all() if r[0] is not None]

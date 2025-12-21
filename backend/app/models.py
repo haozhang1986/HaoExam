@@ -44,17 +44,26 @@ class Question(Base):
     question_number = Column(String)
     difficulty = Column(Enum(DifficultyLevel), default=DifficultyLevel.Medium)
     
+    # ExamSlicer Fields
+    paper_number = Column(String, index=True) # e.g., "P1", "P3", "M1"
+    question_type = Column(String) # e.g., "Calculation", "Graphing"
+    topic = Column(String, index=True) # e.g., "Algebra", "Differentiation"
+    subtopic = Column(String) # e.g., "Modulus Functions", "Chain Rule"
+    subtopic_details = Column(String) # JSON string storing list of learning outcomes
+    
     # Relationships
     tags = relationship("Tag", secondary=question_tags, back_populates="questions")
 
 class Tag(Base):
     __tablename__ = "tags"
     __table_args__ = (
-        UniqueConstraint('name', 'category', name='uq_tag_name_category'),
+        UniqueConstraint('name', 'category', 'paper', 'subject', name='uq_tag_name_category_paper_subject'),
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True) # Removed unique=True
+    name = Column(String, index=True) 
     category = Column(String, nullable=True) # e.g., "Topic", "Sub-topic"
+    paper = Column(String, nullable=True) # e.g., "1", "3", "S1", "M1"
+    subject = Column(String, nullable=True, index=True) # e.g., "Math", "Physics"
 
     questions = relationship("Question", secondary=question_tags, back_populates="tags")

@@ -1,0 +1,41 @@
+{
+    "9709_Pure1": {
+        "Quadratics": [
+            "Discriminant",
+            "Completing the square",
+            "Quadratic inequalities",
+            "Hidden quadratics"
+        ],
+        "Coordinate Geometry": [
+            "Equation of a circle",
+            "Intersection of line and circle",
+            "Perpendicular bisector",
+            "Distance between points"
+        ],
+        "Trigonometry": [
+            "Sine and Cosine rules",
+            "Area of triangle",
+            "Trigonometric identities",
+            "Solving equations"
+        ]
+    },
+    "9709_Stats1": {
+        "Representation of data": [
+            "Histograms",
+            "Cumulative frequency graphs",
+            "Box-and-whisker plots",
+            "Stem-and-leaf diagrams"
+        ],
+        "Probability": [
+            "Independent events",
+            "Mutually exclusive events",
+            "Conditional probability"
+        ],
+        "Discrete Random Variables": [
+            "Probability distribution table",
+            "Expectation and Variance",
+            "Binomial distribution",
+            "Geometric distribution"
+        ]
+    }
+}

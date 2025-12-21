@@ -30,6 +30,9 @@
                 <button id="nav-upload" class="nav-item">
                     Upload New
                 </button>
+                <button id="nav-zip-upload" class="nav-item">
+                    📦 Bulk ZIP Upload
+                </button>
                 <button id="nav-manage" class="nav-item">
                     Management
                 </button>
@@ -52,6 +55,24 @@
                     </select>
                 </div>
                 <div class="filter-group">
+                    <label>Paper No</label>
+                    <select id="filter-paper">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Question Type</label>
+                    <select id="filter-question-type">
+                        <option value="">All</option>
+                        <option value="Calculation">Calculation</option>
+                        <option value="Graphing">Graphing</option>
+                        <option value="Proof">Proof</option>
+                        <option value="Application">Application</option>
+                        <option value="Solving Equations/Inequalities">Solving Equations/Inequalities</option>
+                        <option value="Finding Area/Volume">Finding Area/Volume</option>
+                    </select>
+                </div>
+                <div class="filter-group">
                     <label>Year</label>
                     <select id="filter-year">
                         <option value="">All</option>
@@ -68,16 +89,12 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>Topic</label>
-                    <select id="filter-tag-category">
-                        <option value="">All</option>
-                    </select>
+                    <label>Topic (Multi-select)</label>
+                    <div id="filter-topic"></div>
                 </div>
                 <div class="filter-group">
-                    <label>Sub-topic</label>
-                    <select id="filter-tag-name">
-                        <option value="">All</option>
-                    </select>
+                    <label>Subtopic (Multi-select)</label>
+                    <div id="filter-subtopic"></div>
                 </div>
                 <div class="filter-group">
                     <label>Difficulty</label>
@@ -229,6 +246,12 @@
                                 <input type="text" id="new-subject" placeholder="Enter Subject Name" hidden>
                             </div>
                             <div class="form-group">
+                                <label>Paper No</label>
+                                <select id="input-paper">
+                                    <option value="">Select...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
                                 <label>Year</label>
                                 <select id="input-year">
                                     <option value="">Select...</option>
@@ -273,6 +296,84 @@
                         <div style="margin-top: 2rem; text-align: right;">
                             <button id="btn-submit-upload" class="btn-primary">Save Question</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ZIP Upload View (Admin Only) -->
+            <div id="view-zip-upload" class="view">
+                <div class="view-header">
+                    <h2>📦 Bulk ZIP Upload</h2>
+                    <p style="color: #6b7280; font-size: 0.875rem;">Upload ExamSlicer ZIP files for bulk import</p>
+                </div>
+                <div class="upload-container" style="max-width: 800px; margin: 0 auto;">
+                    <!-- Drop Zone -->
+                    <div id="zip-drop-zone" style="
+                        border: 3px dashed #cbd5e1;
+                        border-radius: 1rem;
+                        padding: 4rem 2rem;
+                        text-align: center;
+                        background: #f8fafc;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        margin-bottom: 2rem;
+                    ">
+                        <input type="file" id="zip-file-input" accept=".zip" hidden>
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📦</div>
+                        <h3 style="color: #1e293b; margin-bottom: 0.5rem;">Drop ZIP file here</h3>
+                        <p style="color: #64748b; margin-bottom: 1.5rem;">or click to browse</p>
+                        <button type="button" class="btn-primary"
+                            onclick="document.getElementById('zip-file-input').click()">
+                            Select ZIP File
+                        </button>
+                        <p id="zip-file-name" style="margin-top: 1rem; color: #3b82f6; font-weight: 500;"></p>
+                    </div>
+
+                    <!-- Upload Button -->
+                    <button id="btn-upload-zip" class="btn-primary" disabled
+                        style="width: 100%; padding: 1rem; font-size: 1rem; margin-bottom: 1rem;">
+                        Upload and Import
+                    </button>
+
+                    <!-- Progress Bar -->
+                    <div id="zip-progress-container" style="display: none; margin-bottom: 2rem;">
+                        <div
+                            style="background: #e2e8f0; border-radius: 0.5rem; height: 2rem; overflow: hidden; position: relative;">
+                            <div id="zip-progress-bar" style="
+                                background: linear-gradient(90deg, #3b82f6, #6366f1);
+                                height: 100%;
+                                width: 0%;
+                                transition: width 0.3s;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: white;
+                                font-weight: 600;
+                            ">0%</div>
+                        </div>
+                        <p id="zip-progress-text" style="text-align: center; margin-top: 0.5rem; color: #64748b;">
+                            Uploading...</p>
+                    </div>
+
+                    <!-- Results -->
+                    <div id="zip-results" style="display: none;">
+                        <div
+                            style="background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <h3 style="color: #1e293b; margin-bottom: 1rem;">Import Results</h3>
+                            <div id="zip-results-content"></div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div
+                        style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 0.75rem; padding: 1.5rem; margin-top: 2rem;">
+                        <h4 style="color: #1e40af; margin-bottom: 0.75rem;">📋 ZIP File Structure</h4>
+                        <ul style="color: #1e40af; font-size: 0.875rem; line-height: 1.75;">
+                            <li>Include <code>config.json</code> for batch metadata (optional)</li>
+                            <li>Question images: <code>Q1.jpg</code>, <code>Q2.jpg</code>, etc.</li>
+                            <li>Answer images: <code>Q1_ans.jpg</code>, <code>Q2_ans.jpg</code>, etc.</li>
+                            <li>Metadata files: <code>Q1.json</code>, <code>Q2.json</code>, etc.</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -401,6 +502,12 @@
                             <input type="text" id="new-edit-subject" placeholder="New Subject" hidden>
                         </div>
                         <div class="form-group">
+                            <label>Paper No</label>
+                            <select id="edit-paper">
+                                <option value="">Select...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>Year</label>
                             <input type="number" id="edit-year">
                         </div>
@@ -527,7 +634,11 @@
         </div>
     </div>
 
-    <script src="app.js?v=2.3"></script>
+    <!-- Scripts -->
+    <script src="multi-select.js?v=2.0"></script>
+    <script src="app.js?v=2.0"></script>
+    <script src="zip-upload.js?v=2.0"></script>
+
 </body>
 
 </html>
