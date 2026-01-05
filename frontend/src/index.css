@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ====================================
+   像素风全局样式 - Pixel Art Style
+   ==================================== */
+
+/* 1. 关闭抗锯齿，保持像素锐利边缘 */
+body {
+  font-family: 'Zpix', 'VT323', ui-monospace, monospace;
+  background-color: #f5f5f0;
+  color: #1a1a1a;
+
+  /* 关闭字体抗锯齿 */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+
+  /* 图片像素化渲染 */
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 2. 方格纸背景 (可选) */
+body.grid-bg {
+  background-color: #f5f5f0;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -1px -1px;
+}
+
+/* 3. 像素风按钮基础类 */
+@layer components {
+  /* 像素按钮 - 基础 */
+  .pixel-btn {
+    @apply font-pixel text-lg px-6 py-2
+           border-4 border-pixel-dark
+           bg-pixel-white text-pixel-dark
+           shadow-pixel
+           transition-all duration-100
+           cursor-pointer select-none
+           uppercase tracking-wider;
+  }
+
+  .pixel-btn:hover {
+    @apply -translate-y-0.5 shadow-pixel-hover;
+  }
+
+  .pixel-btn:active {
+    @apply translate-x-1 translate-y-1 shadow-none;
+  }
+
+  /* 像素按钮 - 主色 */
+  .pixel-btn-primary {
+    @apply pixel-btn bg-pixel-primary text-white border-pixel-dark;
+  }
+
+  /* 像素按钮 - 危险 */
+  .pixel-btn-danger {
+    @apply pixel-btn bg-pixel-red text-white border-pixel-dark;
+  }
+
+  /* 像素按钮 - 成功 */
+  .pixel-btn-success {
+    @apply pixel-btn bg-pixel-green text-pixel-dark border-pixel-dark;
+  }
+
+  /* 4. 像素风卡片 */
+  .pixel-card {
+    @apply bg-pixel-white border-4 border-pixel-dark shadow-pixel p-0 rounded-none;
+  }
+
+  .pixel-card-header {
+    @apply border-b-4 border-pixel-dark p-4 text-center;
+  }
+
+  .pixel-card-body {
+    @apply p-6;
+  }
+
+  /* 5. 像素风输入框 */
+  .pixel-input {
+    @apply w-full px-4 py-2
+           border-4 border-pixel-dark
+           bg-pixel-white text-pixel-dark
+           font-pixel text-lg
+           outline-none rounded-none
+           focus:border-pixel-primary
+           placeholder:text-pixel-gray-400;
+  }
+
+  /* 终端风格输入框 */
+  .pixel-input-terminal {
+    @apply w-full px-4 py-2
+           bg-pixel-dark text-pixel-green
+           border-none outline-none
+           font-mono text-lg
+           placeholder:text-green-700;
+  }
+
+  /* 6. 像素风选择框 */
+  .pixel-select {
+    @apply w-full px-4 py-2
+           border-4 border-pixel-dark
+           bg-pixel-white text-pixel-dark
+           font-pixel text-lg
+           outline-none rounded-none
+           appearance-none
+           cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231a1a1a'%3E%3Cpath stroke-linecap='square' stroke-width='3' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+
+  .pixel-select:focus {
+    @apply border-pixel-primary;
+  }
+
+  /* 7. 像素风标签 */
+  .pixel-tag {
+    @apply inline-block px-3 py-1
+           border-2 border-pixel-dark
+           bg-pixel-gray-100 text-pixel-dark
+           font-pixel text-sm uppercase
+           rounded-none;
+  }
+
+  .pixel-tag-blue {
+    @apply pixel-tag bg-blue-100 text-blue-800;
+  }
+
+  .pixel-tag-green {
+    @apply pixel-tag bg-green-100 text-green-800;
+  }
+
+  .pixel-tag-yellow {
+    @apply pixel-tag bg-yellow-100 text-yellow-800;
+  }
+
+  .pixel-tag-pink {
+    @apply pixel-tag bg-pink-100 text-pink-800;
+  }
+
+  /* 8. 像素风导航栏 */
+  .pixel-navbar {
+    @apply fixed w-full z-50 bg-pixel-white border-b-4 border-pixel-dark top-0;
+  }
+
+  /* 9. 像素风底部状态栏 */
+  .pixel-statusbar {
+    @apply fixed bottom-0 w-full
+           bg-pixel-dark text-pixel-green
+           font-pixel text-xl py-2 px-4
+           border-t-4 border-pixel-green
+           flex justify-between z-50;
+  }
+
+  /* 10. 光标闪烁动画 */
+  .cursor-blink {
+    animation: blink 1s step-end infinite;
+  }
+}
+
+/* 滚动条像素风格 */
+::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e0e0e0;
+  border: 2px solid #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #808080;
+  border: 2px solid #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #606060;
+}
+
+::-webkit-scrollbar-corner {
+  background: #e0e0e0;
+  border: 2px solid #1a1a1a;
+}
+
+/* 选中文本颜色 */
+::selection {
+  background-color: #f6d55c;
+  color: #1a1a1a;
+}
+
+/* 确保所有图片保持像素化 */
+img {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* 禁用所有默认圆角 */
+* {
+  border-radius: 0 !important;
+}
+
+/* 恢复某些特殊元素的圆角需求时可以使用 !important 覆盖 */

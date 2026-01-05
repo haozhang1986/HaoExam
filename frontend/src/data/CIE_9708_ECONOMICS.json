@@ -1,0 +1,1202 @@
+{
+    "meta": {
+        "curriculum": "Cambridge International AS & A Level",
+        "subject": "Economics",
+        "syllabus_code": "9708",
+        "year": "2023-2025"
+    },
+    "papers": [
+        {
+            "paper_code": "P1",
+            "paper_name": "AS Level Multiple Choice",
+            "valid_question_types": [
+                "Recall",
+                "Calculation",
+                "Analysis",
+                "Application"
+            ],
+            "topics": [
+                {
+                    "name": "1. Basic economic ideas and resource allocation",
+                    "subtopics": [
+                        {
+                            "name": "1.1 Scarcity, choice and opportunity cost",
+                            "details": [
+                                "fundamental economic problem of scarcity",
+                                "need to make choices at all levels (individuals, firms, governments)",
+                                "nature and definition of opportunity cost, arising from choices",
+                                "basic questions of resource allocation: what to produce, how to produce, for whom to produce"
+                            ]
+                        },
+                        {
+                            "name": "1.2 Economic methodology",
+                            "details": [
+                                "economics as a social science",
+                                "positive and normative statements (the distinction between facts and value judgements)",
+                                "meaning of the term ceteris paribus",
+                                "importance of the time period (short run, long run, very long run)"
+                            ]
+                        },
+                        {
+                            "name": "1.3 Factors of production",
+                            "details": [
+                                "nature and definition of factors of production: land, labour, capital and enterprise",
+                                "difference between human capital and physical capital",
+                                "rewards to the factors of production",
+                                "division of labour and specialisation",
+                                "role of the entrepreneur in contemporary economies: risk and organisation of the other factors of production"
+                            ]
+                        },
+                        {
+                            "name": "1.4 Resource allocation in different economic systems",
+                            "details": [
+                                "decision-making in market, planned and mixed economies",
+                                "resource allocation in these economic systems"
+                            ]
+                        },
+                        {
+                            "name": "1.5 Production possibility curves",
+                            "details": [
+                                "nature and meaning of a production possibility curve (PPC)",
+                                "shape of the PPC: constant and increasing opportunity costs",
+                                "causes and consequences of shifts in a PPC",
+                                "significance of a position within a PPC"
+                            ]
+                        },
+                        {
+                            "name": "1.6 Classification of goods and services",
+                            "details": [
+                                "nature and definition of free goods and private goods (economic goods)",
+                                "nature and definition of public goods",
+                                "nature and definition of merit goods: under-consumption as a result of imperfect information in the market",
+                                "nature and definition of demerit goods: over-consumption as a result of imperfect information in the market"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "2. The price system and the microeconomy",
+                    "subtopics": [
+                        {
+                            "name": "2.1 Demand and supply curves",
+                            "details": [
+                                "effective demand",
+                                "individual and market demand and supply",
+                                "determinants of demand",
+                                "determinants of supply",
+                                "causes of a shift in the demand curve (D)",
+                                "causes of a shift in the supply curve (S)",
+                                "distinction between the shift in the demand or supply curve and the movement along these curves"
+                            ]
+                        },
+                        {
+                            "name": "2.2 Price elasticity, income elasticity and cross elasticity of demand",
+                            "details": [
+                                "definition of price elasticity, income elasticity and cross elasticity of demand (PED, YED, XED)",
+                                "formulae for and calculation of price elasticity, income elasticity and cross elasticity of demand",
+                                "significance of relative percentage changes, the size and sign of the coefficient",
+                                "descriptions of elasticity values: perfectly elastic, (highly) elastic, unitary elasticity, (highly) inelastic, perfectly inelastic",
+                                "variation in price elasticity of demand along the length of a straight-line demand curve",
+                                "factors affecting PED, YED, XED",
+                                "relationship between price elasticity of demand and total expenditure on a product",
+                                "implications for decision-making of PED, YED and XED"
+                            ]
+                        },
+                        {
+                            "name": "2.3 Price elasticity of supply",
+                            "details": [
+                                "definition of price elasticity of supply (PES)",
+                                "formula for and calculation of price elasticity of supply",
+                                "significance of relative percentage changes, the size and sign of the coefficient of price elasticity of supply",
+                                "factors affecting price elasticity of supply",
+                                "implications for speed and ease with which firms react to changed market conditions"
+                            ]
+                        },
+                        {
+                            "name": "2.4 The interaction of demand and supply",
+                            "details": [
+                                "definition of market equilibrium and disequilibrium",
+                                "effects of shifts in demand and supply curves on equilibrium price and quantity",
+                                "relationships between different markets: joint demand (complements), alternative demand (substitutes), derived demand, joint supply",
+                                "functions of price in resource allocation; rationing, signalling (transmission of preferences) and incentivising"
+                            ]
+                        },
+                        {
+                            "name": "2.5 Consumer and producer surplus",
+                            "details": [
+                                "meaning and significance of consumer surplus",
+                                "meaning and significance of producer surplus",
+                                "causes of changes in consumer and producer surplus",
+                                "significance of price elasticity of demand and of supply in determining the extent of these changes"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Government microeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "3.1 Reasons for government intervention in markets",
+                            "details": [
+                                "addressing the non-provision of public goods",
+                                "addressing the over-consumption of demerit goods and the under-consumption of merit goods",
+                                "controlling prices in markets"
+                            ]
+                        },
+                        {
+                            "name": "3.2 Methods and effects of government intervention in markets",
+                            "details": [
+                                "impact and incidence of specific indirect taxes",
+                                "impact and incidence of subsidies",
+                                "direct provision of goods and services",
+                                "maximum and minimum prices",
+                                "buffer stock schemes",
+                                "provision of information"
+                            ]
+                        },
+                        {
+                            "name": "3.3 Addressing income and wealth inequality",
+                            "details": [
+                                "difference between income as a flow concept and wealth as a stock concept",
+                                "measuring income and wealth inequality: Gini coefficient (calculation not required)",
+                                "economic reasons for inequality of income and wealth",
+                                "policies to redistribute income and wealth: minimum wage, transfer payments, progressive income taxes, inheritance and capital taxes, state provision of essential goods and services"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "4. The macroeconomy",
+                    "subtopics": [
+                        {
+                            "name": "4.1 National income statistics",
+                            "details": [
+                                "meaning of national income",
+                                "measurement of national income: Gross Domestic Product (GDP), Gross National Income (GNI), Net National Income (NNI)",
+                                "adjustment of measures from market prices to basic prices",
+                                "adjustment of measures from gross values to net values"
+                            ]
+                        },
+                        {
+                            "name": "4.2 Introduction to the circular flow of income",
+                            "details": [
+                                "circular flow of income in a closed economy and an open economy",
+                                "injections and leakages (multiplier not required)",
+                                "equilibrium and disequilibrium"
+                            ]
+                        },
+                        {
+                            "name": "4.3 Aggregate Demand and Aggregate Supply analysis",
+                            "details": [
+                                "definition of Aggregate Demand (AD)",
+                                "components of AD and their meanings: AD = C + I + G + (X – M)",
+                                "determinants of AD",
+                                "shape of the AD curve (downward sloping)",
+                                "causes of a shift in the AD curve",
+                                "definition of Aggregate Supply (AS)",
+                                "determinants of AS",
+                                "shape of the AS curve in the short run (SRAS) and the long run (LRAS)",
+                                "causes of a shift in the AS curve in the short run (SRAS) and in the long run (LRAS)",
+                                "distinction between a movement along and a shift in AD and AS",
+                                "establishment of equilibrium in the AD/AS model",
+                                "effects of shifts in the AD curve and the AS curve on the level of real output, the price level and employment"
+                            ]
+                        },
+                        {
+                            "name": "4.4 Economic growth",
+                            "details": [
+                                "meaning of economic growth",
+                                "measurement of economic growth",
+                                "distinction between growth in nominal GDP and real GDP",
+                                "causes of economic growth",
+                                "consequences of economic growth"
+                            ]
+                        },
+                        {
+                            "name": "4.5 Unemployment",
+                            "details": [
+                                "meaning of unemployment",
+                                "measures of unemployment, with reference to possible difficulties in measurement",
+                                "causes and types of unemployment: frictional, structural, cyclical, seasonal and technological",
+                                "consequences of unemployment"
+                            ]
+                        },
+                        {
+                            "name": "4.6 Price stability",
+                            "details": [
+                                "definition of inflation, deflation and disinflation",
+                                "measurement of changes in the price level: consumer price index (CPI)",
+                                "distinction between money values (nominal) and real data",
+                                "causes of inflation: cost-push and demand-pull inflation",
+                                "consequences of inflation"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "5. Government macroeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "5.1 Government macroeconomic policy objectives",
+                            "details": [
+                                "use of government policy to achieve macroeconomic objectives: price stability, low unemployment, economic growth"
+                            ]
+                        },
+                        {
+                            "name": "5.2 Fiscal policy",
+                            "details": [
+                                "meaning of government budget",
+                                "distinction between a government budget deficit and a government budget surplus",
+                                "meaning and significance of the national debt",
+                                "taxation: types of taxes, rates of tax, reasons for taxation",
+                                "government spending: types of spending, reasons for government spending",
+                                "distinction between expansionary and contractionary fiscal policy",
+                                "AD/AS analysis of the impact of expansionary and contractionary fiscal policy"
+                            ]
+                        },
+                        {
+                            "name": "5.3 Monetary policy",
+                            "details": [
+                                "definition of monetary policy",
+                                "tools of monetary policy: interest rates, money supply and credit regulations",
+                                "distinction between expansionary and contractionary monetary policy",
+                                "AD/AS analysis of the impact of expansionary and contractionary monetary policy"
+                            ]
+                        },
+                        {
+                            "name": "5.4 Supply-side policy",
+                            "details": [
+                                "meaning of supply-side policy, in terms of its effect on LRAS curves",
+                                "objectives of supply-side policy: increasing productivity and productive capacity",
+                                "tools of supply-side policy",
+                                "AD/AS analysis of the impact of supply-side policy"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "6. International economic issues",
+                    "subtopics": [
+                        {
+                            "name": "6.1 The reasons for international trade",
+                            "details": [
+                                "distinction between absolute and comparative advantage",
+                                "benefits of specialisation and free trade (trade liberalisation)",
+                                "exports, imports and the terms of trade: measurement, causes of changes, impact of changes",
+                                "limitations of the theories of absolute and comparative advantage"
+                            ]
+                        },
+                        {
+                            "name": "6.2 Protectionism",
+                            "details": [
+                                "meaning of protectionism in the context of international trade",
+                                "different tools of protection and their impact: tariffs, import quotas, export subsidies, embargoes, excessive administrative burdens",
+                                "arguments for and against protectionism"
+                            ]
+                        },
+                        {
+                            "name": "6.3 Current account of the balance of payments",
+                            "details": [
+                                "components of the current account: trade in goods, services, primary and secondary income",
+                                "calculation of trade balances and current account balance (CAB)",
+                                "causes of imbalances in the current account",
+                                "consequences of imbalances in the current account"
+                            ]
+                        },
+                        {
+                            "name": "6.4 Exchange rates",
+                            "details": [
+                                "definition of exchange rate",
+                                "determination of a floating exchange rate",
+                                "distinction between depreciation and appreciation",
+                                "causes of changes in a floating exchange rate: demand and supply of the currency",
+                                "AD/AS analysis of the impact of exchange rate changes"
+                            ]
+                        },
+                        {
+                            "name": "6.5 Policies to correct imbalances in the current account",
+                            "details": [
+                                "government policy objective of stability of the current account",
+                                "effect of fiscal, monetary, supply-side and protectionist policies on the current account"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "paper_code": "P2",
+            "paper_name": "AS Level Data Response and Essay",
+            "valid_question_types": [
+                "Data Response",
+                "Explanation",
+                "Analysis",
+                "Evaluation"
+            ],
+            "topics": [
+                {
+                    "name": "1. Basic economic ideas and resource allocation",
+                    "subtopics": [
+                        {
+                            "name": "1.1 Scarcity, choice and opportunity cost",
+                            "details": [
+                                "fundamental economic problem of scarcity",
+                                "need to make choices at all levels (individuals, firms, governments)",
+                                "nature and definition of opportunity cost, arising from choices",
+                                "basic questions of resource allocation: what to produce, how to produce, for whom to produce"
+                            ]
+                        },
+                        {
+                            "name": "1.2 Economic methodology",
+                            "details": [
+                                "economics as a social science",
+                                "positive and normative statements (the distinction between facts and value judgements)",
+                                "meaning of the term ceteris paribus",
+                                "importance of the time period (short run, long run, very long run)"
+                            ]
+                        },
+                        {
+                            "name": "1.3 Factors of production",
+                            "details": [
+                                "nature and definition of factors of production: land, labour, capital and enterprise",
+                                "difference between human capital and physical capital",
+                                "rewards to the factors of production",
+                                "division of labour and specialisation",
+                                "role of the entrepreneur in contemporary economies: risk and organisation of the other factors of production"
+                            ]
+                        },
+                        {
+                            "name": "1.4 Resource allocation in different economic systems",
+                            "details": [
+                                "decision-making in market, planned and mixed economies",
+                                "resource allocation in these economic systems"
+                            ]
+                        },
+                        {
+                            "name": "1.5 Production possibility curves",
+                            "details": [
+                                "nature and meaning of a production possibility curve (PPC)",
+                                "shape of the PPC: constant and increasing opportunity costs",
+                                "causes and consequences of shifts in a PPC",
+                                "significance of a position within a PPC"
+                            ]
+                        },
+                        {
+                            "name": "1.6 Classification of goods and services",
+                            "details": [
+                                "nature and definition of free goods and private goods (economic goods)",
+                                "nature and definition of public goods",
+                                "nature and definition of merit goods: under-consumption as a result of imperfect information in the market",
+                                "nature and definition of demerit goods: over-consumption as a result of imperfect information in the market"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "2. The price system and the microeconomy",
+                    "subtopics": [
+                        {
+                            "name": "2.1 Demand and supply curves",
+                            "details": [
+                                "effective demand",
+                                "individual and market demand and supply",
+                                "determinants of demand",
+                                "determinants of supply",
+                                "causes of a shift in the demand curve (D)",
+                                "causes of a shift in the supply curve (S)",
+                                "distinction between the shift in the demand or supply curve and the movement along these curves"
+                            ]
+                        },
+                        {
+                            "name": "2.2 Price elasticity, income elasticity and cross elasticity of demand",
+                            "details": [
+                                "definition of price elasticity, income elasticity and cross elasticity of demand (PED, YED, XED)",
+                                "formulae for and calculation of price elasticity, income elasticity and cross elasticity of demand",
+                                "significance of relative percentage changes, the size and sign of the coefficient",
+                                "descriptions of elasticity values: perfectly elastic, (highly) elastic, unitary elasticity, (highly) inelastic, perfectly inelastic",
+                                "variation in price elasticity of demand along the length of a straight-line demand curve",
+                                "factors affecting PED, YED, XED",
+                                "relationship between price elasticity of demand and total expenditure on a product",
+                                "implications for decision-making of PED, YED and XED"
+                            ]
+                        },
+                        {
+                            "name": "2.3 Price elasticity of supply",
+                            "details": [
+                                "definition of price elasticity of supply (PES)",
+                                "formula for and calculation of price elasticity of supply",
+                                "significance of relative percentage changes, the size and sign of the coefficient of price elasticity of supply",
+                                "factors affecting price elasticity of supply",
+                                "implications for speed and ease with which firms react to changed market conditions"
+                            ]
+                        },
+                        {
+                            "name": "2.4 The interaction of demand and supply",
+                            "details": [
+                                "definition of market equilibrium and disequilibrium",
+                                "effects of shifts in demand and supply curves on equilibrium price and quantity",
+                                "relationships between different markets: joint demand (complements), alternative demand (substitutes), derived demand, joint supply",
+                                "functions of price in resource allocation; rationing, signalling (transmission of preferences) and incentivising"
+                            ]
+                        },
+                        {
+                            "name": "2.5 Consumer and producer surplus",
+                            "details": [
+                                "meaning and significance of consumer surplus",
+                                "meaning and significance of producer surplus",
+                                "causes of changes in consumer and producer surplus",
+                                "significance of price elasticity of demand and of supply in determining the extent of these changes"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Government microeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "3.1 Reasons for government intervention in markets",
+                            "details": [
+                                "addressing the non-provision of public goods",
+                                "addressing the over-consumption of demerit goods and the under-consumption of merit goods",
+                                "controlling prices in markets"
+                            ]
+                        },
+                        {
+                            "name": "3.2 Methods and effects of government intervention in markets",
+                            "details": [
+                                "impact and incidence of specific indirect taxes",
+                                "impact and incidence of subsidies",
+                                "direct provision of goods and services",
+                                "maximum and minimum prices",
+                                "buffer stock schemes",
+                                "provision of information"
+                            ]
+                        },
+                        {
+                            "name": "3.3 Addressing income and wealth inequality",
+                            "details": [
+                                "difference between income as a flow concept and wealth as a stock concept",
+                                "measuring income and wealth inequality: Gini coefficient (calculation not required)",
+                                "economic reasons for inequality of income and wealth",
+                                "policies to redistribute income and wealth: minimum wage, transfer payments, progressive income taxes, inheritance and capital taxes, state provision of essential goods and services"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "4. The macroeconomy",
+                    "subtopics": [
+                        {
+                            "name": "4.1 National income statistics",
+                            "details": [
+                                "meaning of national income",
+                                "measurement of national income: Gross Domestic Product (GDP), Gross National Income (GNI), Net National Income (NNI)",
+                                "adjustment of measures from market prices to basic prices",
+                                "adjustment of measures from gross values to net values"
+                            ]
+                        },
+                        {
+                            "name": "4.2 Introduction to the circular flow of income",
+                            "details": [
+                                "circular flow of income in a closed economy and an open economy",
+                                "injections and leakages (multiplier not required)",
+                                "equilibrium and disequilibrium"
+                            ]
+                        },
+                        {
+                            "name": "4.3 Aggregate Demand and Aggregate Supply analysis",
+                            "details": [
+                                "definition of Aggregate Demand (AD)",
+                                "components of AD and their meanings: AD = C + I + G + (X – M)",
+                                "determinants of AD",
+                                "shape of the AD curve (downward sloping)",
+                                "causes of a shift in the AD curve",
+                                "definition of Aggregate Supply (AS)",
+                                "determinants of AS",
+                                "shape of the AS curve in the short run (SRAS) and the long run (LRAS)",
+                                "causes of a shift in the AS curve in the short run (SRAS) and in the long run (LRAS)",
+                                "distinction between a movement along and a shift in AD and AS",
+                                "establishment of equilibrium in the AD/AS model",
+                                "effects of shifts in the AD curve and the AS curve on the level of real output, the price level and employment"
+                            ]
+                        },
+                        {
+                            "name": "4.4 Economic growth",
+                            "details": [
+                                "meaning of economic growth",
+                                "measurement of economic growth",
+                                "distinction between growth in nominal GDP and real GDP",
+                                "causes of economic growth",
+                                "consequences of economic growth"
+                            ]
+                        },
+                        {
+                            "name": "4.5 Unemployment",
+                            "details": [
+                                "meaning of unemployment",
+                                "measures of unemployment, with reference to possible difficulties in measurement",
+                                "causes and types of unemployment: frictional, structural, cyclical, seasonal and technological",
+                                "consequences of unemployment"
+                            ]
+                        },
+                        {
+                            "name": "4.6 Price stability",
+                            "details": [
+                                "definition of inflation, deflation and disinflation",
+                                "measurement of changes in the price level: consumer price index (CPI)",
+                                "distinction between money values (nominal) and real data",
+                                "causes of inflation: cost-push and demand-pull inflation",
+                                "consequences of inflation"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "5. Government macroeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "5.1 Government macroeconomic policy objectives",
+                            "details": [
+                                "use of government policy to achieve macroeconomic objectives: price stability, low unemployment, economic growth"
+                            ]
+                        },
+                        {
+                            "name": "5.2 Fiscal policy",
+                            "details": [
+                                "meaning of government budget",
+                                "distinction between a government budget deficit and a government budget surplus",
+                                "meaning and significance of the national debt",
+                                "taxation: types of taxes, rates of tax, reasons for taxation",
+                                "government spending: types of spending, reasons for government spending",
+                                "distinction between expansionary and contractionary fiscal policy",
+                                "AD/AS analysis of the impact of expansionary and contractionary fiscal policy"
+                            ]
+                        },
+                        {
+                            "name": "5.3 Monetary policy",
+                            "details": [
+                                "definition of monetary policy",
+                                "tools of monetary policy: interest rates, money supply and credit regulations",
+                                "distinction between expansionary and contractionary monetary policy",
+                                "AD/AS analysis of the impact of expansionary and contractionary monetary policy"
+                            ]
+                        },
+                        {
+                            "name": "5.4 Supply-side policy",
+                            "details": [
+                                "meaning of supply-side policy, in terms of its effect on LRAS curves",
+                                "objectives of supply-side policy: increasing productivity and productive capacity",
+                                "tools of supply-side policy",
+                                "AD/AS analysis of the impact of supply-side policy"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "6. International economic issues",
+                    "subtopics": [
+                        {
+                            "name": "6.1 The reasons for international trade",
+                            "details": [
+                                "distinction between absolute and comparative advantage",
+                                "benefits of specialisation and free trade (trade liberalisation)",
+                                "exports, imports and the terms of trade: measurement, causes of changes, impact of changes",
+                                "limitations of the theories of absolute and comparative advantage"
+                            ]
+                        },
+                        {
+                            "name": "6.2 Protectionism",
+                            "details": [
+                                "meaning of protectionism in the context of international trade",
+                                "different tools of protection and their impact: tariffs, import quotas, export subsidies, embargoes, excessive administrative burdens",
+                                "arguments for and against protectionism"
+                            ]
+                        },
+                        {
+                            "name": "6.3 Current account of the balance of payments",
+                            "details": [
+                                "components of the current account: trade in goods, services, primary and secondary income",
+                                "calculation of trade balances and current account balance (CAB)",
+                                "causes of imbalances in the current account",
+                                "consequences of imbalances in the current account"
+                            ]
+                        },
+                        {
+                            "name": "6.4 Exchange rates",
+                            "details": [
+                                "definition of exchange rate",
+                                "determination of a floating exchange rate",
+                                "distinction between depreciation and appreciation",
+                                "causes of changes in a floating exchange rate: demand and supply of the currency",
+                                "AD/AS analysis of the impact of exchange rate changes"
+                            ]
+                        },
+                        {
+                            "name": "6.5 Policies to correct imbalances in the current account",
+                            "details": [
+                                "government policy objective of stability of the current account",
+                                "effect of fiscal, monetary, supply-side and protectionist policies on the current account"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "paper_code": "P3",
+            "paper_name": "A Level Multiple Choice",
+            "valid_question_types": [
+                "Recall",
+                "Calculation",
+                "Analysis",
+                "Application"
+            ],
+            "topics": [
+                {
+                    "name": "7. The price system and the microeconomy",
+                    "subtopics": [
+                        {
+                            "name": "7.1 Utility",
+                            "details": [
+                                "definition and calculation of total utility and marginal utility",
+                                "diminishing marginal utility",
+                                "equi-marginal principle",
+                                "derivation of an individual demand curve",
+                                "limitations of marginal utility theory and its assumptions of rational behaviour"
+                            ]
+                        },
+                        {
+                            "name": "7.2 Indifference curves and budget lines",
+                            "details": [
+                                "meaning of an indifference curve and a budget line",
+                                "causes of a shift in the budget line",
+                                "income, substitution and price effects for normal, inferior and Giffen goods",
+                                "limitations of the model of indifference curves"
+                            ]
+                        },
+                        {
+                            "name": "7.3 Efficiency and market failure",
+                            "details": [
+                                "definitions of productive efficiency and allocative efficiency",
+                                "conditions for productive efficiency and allocative efficiency",
+                                "Pareto optimality",
+                                "definition of dynamic efficiency",
+                                "definition of market failure",
+                                "reasons for market failure"
+                            ]
+                        },
+                        {
+                            "name": "7.4 Private costs and benefits, externalities and social costs and benefits",
+                            "details": [
+                                "definition and calculation of social costs (SC), private costs (PC), external costs (EC)",
+                                "definition and calculation of social benefits (SB), private benefits (PB), external benefits (EB)",
+                                "definition of positive externality and negative externality",
+                                "positive and negative externalities of both consumption and production",
+                                "deadweight welfare losses arising from positive and negative externalities",
+                                "asymmetric information and moral hazard",
+                                "use of costs and benefits in analysing decisions"
+                            ]
+                        },
+                        {
+                            "name": "7.5 Types of cost, revenue and profit, short-run and long-run production",
+                            "details": [
+                                "short-run production function: fixed/variable factors, calculation of products, law of diminishing returns",
+                                "short-run cost function: fixed/variable costs, calculation of costs, shape of curves",
+                                "long-run production function: no fixed factors, returns to scale",
+                                "long-run cost function: shape of LRAC curve, concept of minimum efficient scale",
+                                "relationship between economies of scale and decreasing average costs",
+                                "internal and external economies of scale",
+                                "internal and external diseconomies of scale",
+                                "definition and calculation of revenue: total, average and marginal revenue (TR, AR, MR)",
+                                "definition of normal, subnormal and supernormal profit",
+                                "calculation of supernormal and subnormal profit"
+                            ]
+                        },
+                        {
+                            "name": "7.6 Different market structures",
+                            "details": [
+                                "perfect competition and imperfect competition: monopoly, monopolistic competition, oligopoly, natural monopoly",
+                                "structure based on buyers/sellers, differentiation, entry freedom, and information",
+                                "barriers to entry and exit: legal, market, cost, and physical barriers",
+                                "performance of firms: revenues, output, profits, shutdown price, efficiency/X-inefficiency, contestable markets, price/non-price competition",
+                                "definition and calculation of the concentration ratio"
+                            ]
+                        },
+                        {
+                            "name": "7.7 Growth and survival of firms",
+                            "details": [
+                                "reasons for different sizes of firms",
+                                "internal growth: organic and diversification",
+                                "external growth: horizontal, vertical (forwards/backwards), conglomerate integration; reasons and consequences",
+                                "cartels: conditions and consequences",
+                                "principal–agent problem"
+                            ]
+                        },
+                        {
+                            "name": "7.8 Differing objectives and policies of firms",
+                            "details": [
+                                "profit-maximising objective",
+                                "other objectives: survival, profit satisficing, sales maximisation, revenue maximisation",
+                                "price discrimination: degrees, conditions, and consequences",
+                                "other pricing policies: limit pricing, predatory pricing, price leadership",
+                                "relationship between PED and revenue: normal vs kinked demand curves"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "8. Government microeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "8.1 Government policies to achieve efficient resource allocation and correct market failure",
+                            "details": [
+                                "measures: taxes, subsidies, price controls, quotas, prohibitions, licenses, regulation/deregulation, direct provision, pollution permits, property rights, nationalisation/privatisation, information, nudge theory",
+                                "government failure: definition, causes, and consequences"
+                            ]
+                        },
+                        {
+                            "name": "8.2 Equity and redistribution of income and wealth",
+                            "details": [
+                                "equity vs equality",
+                                "equity vs efficiency",
+                                "absolute vs relative poverty",
+                                "the poverty trap",
+                                "policies: negative income tax, universal/means-tested benefits, universal basic income"
+                            ]
+                        },
+                        {
+                            "name": "8.3 Labour market forces and government intervention",
+                            "details": [
+                                "demand for labour as derived demand",
+                                "factors affecting demand for labour",
+                                "shifts and movements in demand curve for labour",
+                                "marginal revenue product (MRP) theory: definition, calculation, and derivation of firm's demand",
+                                "factors affecting supply of labour: wage and non-wage factors",
+                                "shifts and movements in supply curve for labour",
+                                "wage determination in perfect markets",
+                                "wage determination in imperfect markets: trade unions, government (minimum wage), monopsony employers",
+                                "wage differentials",
+                                "transfer earnings and economic rent: definitions and factors"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "9. The macroeconomy",
+                    "subtopics": [
+                        {
+                            "name": "9.1 The circular flow of income",
+                            "details": [
+                                "the multiplier process: definition, formulae/calculation, propensities (aps, mps, apc, mpc, apm, mpm), tax rates",
+                                "components of AD and determinants: consumption, savings, investment, government spending, net exports",
+                                "full employment level vs equilibrium: inflationary and deflationary gaps"
+                            ]
+                        },
+                        {
+                            "name": "9.2 Economic growth and sustainability",
+                            "details": [
+                                "actual vs potential growth",
+                                "output gaps (positive/negative)",
+                                "business (trade) cycle: phases, causes, automatic stabilisers",
+                                "policies for growth and effectiveness",
+                                "inclusive growth: definition, impact on equity, and policies",
+                                "sustainable growth: definition, resource conservation, environmental impact, and mitigation policies"
+                            ]
+                        },
+                        {
+                            "name": "9.3 Employment/unemployment",
+                            "details": [
+                                "definition of full employment",
+                                "equilibrium vs disequilibrium unemployment (hysteresis)",
+                                "voluntary vs involuntary unemployment",
+                                "natural rate of unemployment: definition, determinants, policy implications",
+                                "patterns and trends",
+                                "mobility of labour: geographical and occupational, factors affecting mobility",
+                                "policies to reduce unemployment and effectiveness"
+                            ]
+                        },
+                        {
+                            "name": "9.4 Money and banking",
+                            "details": [
+                                "money: definition, functions, characteristics",
+                                "money supply definition",
+                                "quantity theory of money (MV = PT)",
+                                "commercial banks: deposit accounts, lending, holdings, ratios, objectives",
+                                "changes in money supply: credit creation/multiplier, central bank role, deficit financing, quantitative easing",
+                                "inflation policies and effectiveness",
+                                "demand for money: liquidity preference theory",
+                                "interest rate determination: loanable funds and Keynesian theory"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "10. Government macroeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "10.1 Government macroeconomic policy objectives",
+                            "details": [
+                                "objectives: inflation, balance of payments, unemployment, growth, development, sustainability, redistribution"
+                            ]
+                        },
+                        {
+                            "name": "10.2 Links between macroeconomic problems and their interrelatedness",
+                            "details": [
+                                "internal vs external value of money",
+                                "balance of payments and inflation",
+                                "growth and inflation",
+                                "growth and balance of payments",
+                                "inflation and unemployment: Phillips curve (traditional and expectations-augmented)"
+                            ]
+                        },
+                        {
+                            "name": "10.3 Effectiveness of policy options to meet all macroeconomic objectives",
+                            "details": [
+                                "effectiveness of fiscal (Laffer curve), monetary, supply-side, exchange rate, and trade policies",
+                                "problems and conflicts arising from policies",
+                                "government failure in macroeconomic policies"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "11. International economic issues",
+                    "subtopics": [
+                        {
+                            "name": "11.1 Policies to correct disequilibrium in the balance of payments",
+                            "details": [
+                                "accounts: current, financial, and capital",
+                                "effect of fiscal, monetary, supply-side, protectionist, and exchange rate policies",
+                                "expenditure-switching vs expenditure-reducing policies"
+                            ]
+                        },
+                        {
+                            "name": "11.2 Exchange rates",
+                            "details": [
+                                "measurement: nominal vs real, trade-weighted exchange rates",
+                                "fixed and managed systems",
+                                "revaluation vs devaluation",
+                                "changes under different systems",
+                                "effects on external economy: Marshall-Lerner and J curve analysis"
+                            ]
+                        },
+                        {
+                            "name": "11.3 Economic development",
+                            "details": [
+                                "classification by development level",
+                                "classification by national income",
+                                "indicators of living standards: monetary, non-monetary, composite (HDI, MEW, MPI); Kuznets curve",
+                                "comparison over time and between countries"
+                            ]
+                        },
+                        {
+                            "name": "11.4 Characteristics of countries at different levels of development",
+                            "details": [
+                                "population: birth/death rates, infant mortality, migration, optimum population, urbanisation",
+                                "income distribution: Gini coefficient and Lorenz curve",
+                                "economic structure: sectors (primary, secondary, tertiary), patterns of trade"
+                            ]
+                        },
+                        {
+                            "name": "11.5 Relationship between countries at different levels of development",
+                            "details": [
+                                "international aid: forms, reasons, and effects",
+                                "trade and investment",
+                                "multinational companies (MNCs): definition, activities, consequences",
+                                "Foreign Direct Investment (FDI): definition and consequences",
+                                "external debt: causes and consequences",
+                                "role of IMF and World Bank"
+                            ]
+                        },
+                        {
+                            "name": "11.6 Globalisation",
+                            "details": [
+                                "meaning, causes, and consequences",
+                                "economic integration: free trade area, customs union, monetary union, full economic union",
+                                "trade creation and trade diversion"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "paper_code": "P4",
+            "paper_name": "A Level Data Response and Essays",
+            "valid_question_types": [
+                "Data Response",
+                "Discussion",
+                "Analysis",
+                "Evaluation"
+            ],
+            "topics": [
+                {
+                    "name": "7. The price system and the microeconomy",
+                    "subtopics": [
+                        {
+                            "name": "7.1 Utility",
+                            "details": [
+                                "definition and calculation of total utility and marginal utility",
+                                "diminishing marginal utility",
+                                "equi-marginal principle",
+                                "derivation of an individual demand curve",
+                                "limitations of marginal utility theory and its assumptions of rational behaviour"
+                            ]
+                        },
+                        {
+                            "name": "7.2 Indifference curves and budget lines",
+                            "details": [
+                                "meaning of an indifference curve and a budget line",
+                                "causes of a shift in the budget line",
+                                "income, substitution and price effects for normal, inferior and Giffen goods",
+                                "limitations of the model of indifference curves"
+                            ]
+                        },
+                        {
+                            "name": "7.3 Efficiency and market failure",
+                            "details": [
+                                "definitions of productive efficiency and allocative efficiency",
+                                "conditions for productive efficiency and allocative efficiency",
+                                "Pareto optimality",
+                                "definition of dynamic efficiency",
+                                "definition of market failure",
+                                "reasons for market failure"
+                            ]
+                        },
+                        {
+                            "name": "7.4 Private costs and benefits, externalities and social costs and benefits",
+                            "details": [
+                                "definition and calculation of social costs (SC), private costs (PC), external costs (EC)",
+                                "definition and calculation of social benefits (SB), private benefits (PB), external benefits (EB)",
+                                "definition of positive externality and negative externality",
+                                "positive and negative externalities of both consumption and production",
+                                "deadweight welfare losses arising from positive and negative externalities",
+                                "asymmetric information and moral hazard",
+                                "use of costs and benefits in analysing decisions"
+                            ]
+                        },
+                        {
+                            "name": "7.5 Types of cost, revenue and profit, short-run and long-run production",
+                            "details": [
+                                "short-run production function: fixed/variable factors, calculation of products, law of diminishing returns",
+                                "short-run cost function: fixed/variable costs, calculation of costs, shape of curves",
+                                "long-run production function: no fixed factors, returns to scale",
+                                "long-run cost function: shape of LRAC curve, concept of minimum efficient scale",
+                                "relationship between economies of scale and decreasing average costs",
+                                "internal and external economies of scale",
+                                "internal and external diseconomies of scale",
+                                "definition and calculation of revenue: total, average and marginal revenue (TR, AR, MR)",
+                                "definition of normal, subnormal and supernormal profit",
+                                "calculation of supernormal and subnormal profit"
+                            ]
+                        },
+                        {
+                            "name": "7.6 Different market structures",
+                            "details": [
+                                "perfect competition and imperfect competition: monopoly, monopolistic competition, oligopoly, natural monopoly",
+                                "structure based on buyers/sellers, differentiation, entry freedom, and information",
+                                "barriers to entry and exit: legal, market, cost, and physical barriers",
+                                "performance of firms: revenues, output, profits, shutdown price, efficiency/X-inefficiency, contestable markets, price/non-price competition",
+                                "definition and calculation of the concentration ratio"
+                            ]
+                        },
+                        {
+                            "name": "7.7 Growth and survival of firms",
+                            "details": [
+                                "reasons for different sizes of firms",
+                                "internal growth: organic and diversification",
+                                "external growth: horizontal, vertical (forwards/backwards), conglomerate integration; reasons and consequences",
+                                "cartels: conditions and consequences",
+                                "principal–agent problem"
+                            ]
+                        },
+                        {
+                            "name": "7.8 Differing objectives and policies of firms",
+                            "details": [
+                                "profit-maximising objective",
+                                "other objectives: survival, profit satisficing, sales maximisation, revenue maximisation",
+                                "price discrimination: degrees, conditions, and consequences",
+                                "other pricing policies: limit pricing, predatory pricing, price leadership",
+                                "relationship between PED and revenue: normal vs kinked demand curves"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "8. Government microeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "8.1 Government policies to achieve efficient resource allocation and correct market failure",
+                            "details": [
+                                "measures: taxes, subsidies, price controls, quotas, prohibitions, licenses, regulation/deregulation, direct provision, pollution permits, property rights, nationalisation/privatisation, information, nudge theory",
+                                "government failure: definition, causes, and consequences"
+                            ]
+                        },
+                        {
+                            "name": "8.2 Equity and redistribution of income and wealth",
+                            "details": [
+                                "equity vs equality",
+                                "equity vs efficiency",
+                                "absolute vs relative poverty",
+                                "the poverty trap",
+                                "policies: negative income tax, universal/means-tested benefits, universal basic income"
+                            ]
+                        },
+                        {
+                            "name": "8.3 Labour market forces and government intervention",
+                            "details": [
+                                "demand for labour as derived demand",
+                                "factors affecting demand for labour",
+                                "shifts and movements in demand curve for labour",
+                                "marginal revenue product (MRP) theory: definition, calculation, and derivation of firm's demand",
+                                "factors affecting supply of labour: wage and non-wage factors",
+                                "shifts and movements in supply curve for labour",
+                                "wage determination in perfect markets",
+                                "wage determination in imperfect markets: trade unions, government (minimum wage), monopsony employers",
+                                "wage differentials",
+                                "transfer earnings and economic rent: definitions and factors"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "9. The macroeconomy",
+                    "subtopics": [
+                        {
+                            "name": "9.1 The circular flow of income",
+                            "details": [
+                                "the multiplier process: definition, formulae/calculation, propensities (aps, mps, apc, mpc, apm, mpm), tax rates",
+                                "components of AD and determinants: consumption, savings, investment, government spending, net exports",
+                                "full employment level vs equilibrium: inflationary and deflationary gaps"
+                            ]
+                        },
+                        {
+                            "name": "9.2 Economic growth and sustainability",
+                            "details": [
+                                "actual vs potential growth",
+                                "output gaps (positive/negative)",
+                                "business (trade) cycle: phases, causes, automatic stabilisers",
+                                "policies for growth and effectiveness",
+                                "inclusive growth: definition, impact on equity, and policies",
+                                "sustainable growth: definition, resource conservation, environmental impact, and mitigation policies"
+                            ]
+                        },
+                        {
+                            "name": "9.3 Employment/unemployment",
+                            "details": [
+                                "definition of full employment",
+                                "equilibrium vs disequilibrium unemployment (hysteresis)",
+                                "voluntary vs involuntary unemployment",
+                                "natural rate of unemployment: definition, determinants, policy implications",
+                                "patterns and trends",
+                                "mobility of labour: geographical and occupational, factors affecting mobility",
+                                "policies to reduce unemployment and effectiveness"
+                            ]
+                        },
+                        {
+                            "name": "9.4 Money and banking",
+                            "details": [
+                                "money: definition, functions, characteristics",
+                                "money supply definition",
+                                "quantity theory of money (MV = PT)",
+                                "commercial banks: deposit accounts, lending, holdings, ratios, objectives",
+                                "changes in money supply: credit creation/multiplier, central bank role, deficit financing, quantitative easing",
+                                "inflation policies and effectiveness",
+                                "demand for money: liquidity preference theory",
+                                "interest rate determination: loanable funds and Keynesian theory"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "10. Government macroeconomic intervention",
+                    "subtopics": [
+                        {
+                            "name": "10.1 Government macroeconomic policy objectives",
+                            "details": [
+                                "objectives: inflation, balance of payments, unemployment, growth, development, sustainability, redistribution"
+                            ]
+                        },
+                        {
+                            "name": "10.2 Links between macroeconomic problems and their interrelatedness",
+                            "details": [
+                                "internal vs external value of money",
+                                "balance of payments and inflation",
+                                "growth and inflation",
+                                "growth and balance of payments",
+                                "inflation and unemployment: Phillips curve (traditional and expectations-augmented)"
+                            ]
+                        },
+                        {
+                            "name": "10.3 Effectiveness of policy options to meet all macroeconomic objectives",
+                            "details": [
+                                "effectiveness of fiscal (Laffer curve), monetary, supply-side, exchange rate, and trade policies",
+                                "problems and conflicts arising from policies",
+                                "government failure in macroeconomic policies"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "11. International economic issues",
+                    "subtopics": [
+                        {
+                            "name": "11.1 Policies to correct disequilibrium in the balance of payments",
+                            "details": [
+                                "accounts: current, financial, and capital",
+                                "effect of fiscal, monetary, supply-side, protectionist, and exchange rate policies",
+                                "expenditure-switching vs expenditure-reducing policies"
+                            ]
+                        },
+                        {
+                            "name": "11.2 Exchange rates",
+                            "details": [
+                                "measurement: nominal vs real, trade-weighted exchange rates",
+                                "fixed and managed systems",
+                                "revaluation vs devaluation",
+                                "changes under different systems",
+                                "effects on external economy: Marshall-Lerner and J curve analysis"
+                            ]
+                        },
+                        {
+                            "name": "11.3 Economic development",
+                            "details": [
+                                "classification by development level",
+                                "classification by national income",
+                                "indicators of living standards: monetary, non-monetary, composite (HDI, MEW, MPI); Kuznets curve",
+                                "comparison over time and between countries"
+                            ]
+                        },
+                        {
+                            "name": "11.4 Characteristics of countries at different levels of development",
+                            "details": [
+                                "population: birth/death rates, infant mortality, migration, optimum population, urbanisation",
+                                "income distribution: Gini coefficient and Lorenz curve",
+                                "economic structure: sectors (primary, secondary, tertiary), patterns of trade"
+                            ]
+                        },
+                        {
+                            "name": "11.5 Relationship between countries at different levels of development",
+                            "details": [
+                                "international aid: forms, reasons, and effects",
+                                "trade and investment",
+                                "multinational companies (MNCs): definition, activities, consequences",
+                                "Foreign Direct Investment (FDI): definition and consequences",
+                                "external debt: causes and consequences",
+                                "role of IMF and World Bank"
+                            ]
+                        },
+                        {
+                            "name": "11.6 Globalisation",
+                            "details": [
+                                "meaning, causes, and consequences",
+                                "economic integration: free trade area, customs union, monetary union, full economic union",
+                                "trade creation and trade diversion"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

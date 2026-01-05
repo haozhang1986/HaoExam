@@ -1,0 +1,1398 @@
+{
+    "meta": {
+        "curriculum": "Cambridge International AS & A Level",
+        "subject": "Chemistry",
+        "syllabus_code": "9701",
+        "year": "2023-2025"
+    },
+    "papers": [
+        {
+            "paper_code": "P1",
+            "paper_name": "Multiple Choice",
+            "valid_question_types": [
+                "Recall",
+                "Calculation",
+                "Deduction",
+                "Mechanism Identification"
+            ],
+            "topics": [
+                {
+                    "name": "1. Atomic structure",
+                    "subtopics": [
+                        {
+                            "name": "1.1 Particles in the atom and atomic radius",
+                            "details": [
+                                "understand that atoms are mostly empty space with a small, dense, positively charged nucleus",
+                                "identify and describe protons, neutrons and electrons in terms of relative charge and relative mass",
+                                "understand the terms atomic (proton) number and mass (nucleon) number",
+                                "describe the distribution of mass and charge within an atom",
+                                "describe the behavior of beams of protons, neutrons and electrons in electric fields",
+                                "determine the numbers of protons, neutrons and electrons present in both atoms and ions",
+                                "state and explain the trends in atomic radius and ionic radius across a period and down a group"
+                            ]
+                        },
+                        {
+                            "name": "1.2 Isotopes",
+                            "details": [
+                                "define the term isotope",
+                                "understand the notation xKy for isotopes",
+                                "explain why isotopes of the same element have the same chemical properties",
+                                "explain why isotopes of the same element have different physical properties (limited to mass and density)"
+                            ]
+                        },
+                        {
+                            "name": "1.3 Electrons, energy levels and atomic orbitals",
+                            "details": [
+                                "understand the terms shell, sub-shell and orbital",
+                                "describe the number of orbitals that make up s, p and d sub-shells and the number of electrons that can fill s, p and d sub-shells",
+                                "describe the shapes of s and p orbitals",
+                                "state the electronic configuration of atoms and ions for the elements hydrogen to krypton",
+                                "explain the electronic configurations in terms of energy of the electrons and inter-electron repulsion",
+                                "use the electrons-in-boxes notation"
+                            ]
+                        },
+                        {
+                            "name": "1.4 Ionisation energy",
+                            "details": [
+                                "define the term first ionisation energy",
+                                "construct equations to represent first, second and subsequent ionisation energies",
+                                "identify and explain the trends in ionisation energies across a period and down a group",
+                                "explain the trends in ionisation energy in terms of nuclear charge, atomic/ionic radius, shielding and spin-pair repulsion"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "2. Atoms, molecules and stoichiometry",
+                    "subtopics": [
+                        {
+                            "name": "2.1 Relative masses of atoms and molecules",
+                            "details": [
+                                "define the unified atomic mass unit",
+                                "define relative atomic mass, Ar, relative molecular mass, Mr, and relative formula mass"
+                            ]
+                        },
+                        {
+                            "name": "2.2 The mole and the Avogadro constant",
+                            "details": [
+                                "define and use the term mole in terms of the Avogadro constant"
+                            ]
+                        },
+                        {
+                            "name": "2.3 Formulae",
+                            "details": [
+                                "write formulae of ionic compounds from ionic charges",
+                                "construct balanced chemical equations (including state symbols)",
+                                "construct ionic equations from chemical equations",
+                                "define and use the terms empirical formula and molecular formula",
+                                "understand the terms anhydrous, hydrated and water of crystallisation"
+                            ]
+                        },
+                        {
+                            "name": "2.4 Reacting masses and volumes (of solutions and gases)",
+                            "details": [
+                                "perform calculations involving reacting masses",
+                                "perform calculations involving volumes of gases (using the molar gas volume)",
+                                "perform calculations involving concentrations and volumes of solutions",
+                                "calculate percentage yield and percentage purity",
+                                "identify the limiting reagent in a reaction"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Chemical bonding",
+                    "subtopics": [
+                        {
+                            "name": "3.1 Electronegativity and bonding",
+                            "details": [
+                                "define electronegativity",
+                                "explain the factors influencing electronegativity and the trends across a period and down a group",
+                                "use electronegativity values to predict the type of bonding (ionic or covalent)"
+                            ]
+                        },
+                        {
+                            "name": "3.2 Ionic bonding",
+                            "details": [
+                                "describe ionic bonding as the electrostatic attraction between oppositely charged ions",
+                                "describe the giant ionic lattice structures of sodium chloride and magnesium oxide"
+                            ]
+                        },
+                        {
+                            "name": "3.3 Metallic bonding",
+                            "details": [
+                                "describe metallic bonding as the electrostatic attraction between positive metal ions and a sea of delocalised electrons"
+                            ]
+                        },
+                        {
+                            "name": "3.4 Covalent bonding and coordinate bonding",
+                            "details": [
+                                "define covalent bonding and coordinate (dative covalent) bonding",
+                                "describe sigma (σ) and pi (π) bonds",
+                                "explain hybridisation (sp, sp2, sp3)",
+                                "use bond energy and bond length values to compare the reactivity of covalent bonds"
+                            ]
+                        },
+                        {
+                            "name": "3.5 Shapes of molecules",
+                            "details": [
+                                "state and explain the shapes of molecules and ions using VSEPR theory",
+                                "predict bond angles in molecules and ions"
+                            ]
+                        },
+                        {
+                            "name": "3.6 Intermolecular forces",
+                            "details": [
+                                "describe hydrogen bonding",
+                                "explain the concept of bond polarity and permanent dipoles",
+                                "describe van der Waals' forces (instantaneous dipole – induced dipole and permanent dipole – permanent dipole)"
+                            ]
+                        },
+                        {
+                            "name": "3.7 Dot-and-cross diagrams",
+                            "details": [
+                                "draw dot-and-cross diagrams to represent the bonding in ionic and covalent compounds"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "4. States of matter",
+                    "subtopics": [
+                        {
+                            "name": "4.1 The gaseous state",
+                            "details": [
+                                "explain the origin of pressure in a gas",
+                                "state the basic assumptions of the kinetic theory of ideal gases",
+                                "use the ideal gas equation pV = nRT"
+                            ]
+                        },
+                        {
+                            "name": "4.2 Bonding and structure",
+                            "details": [
+                                "describe the lattice structures of crystalline solids: giant ionic, simple molecular, giant molecular and giant metallic",
+                                "relate the physical properties of a substance to its structure and bonding"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "5. Chemical energetics",
+                    "subtopics": [
+                        {
+                            "name": "5.1 Enthalpy change, ΔH",
+                            "details": [
+                                "understand that chemical reactions are accompanied by energy changes (exothermic and endothermic)",
+                                "construct and interpret reaction pathway diagrams",
+                                "define standard enthalpy changes of reaction, formation, combustion and neutralisation",
+                                "calculate enthalpy changes from experimental results using q = mcΔT"
+                            ]
+                        },
+                        {
+                            "name": "5.2 Hess’s Law",
+                            "details": [
+                                "apply Hess’s Law to construct energy cycles",
+                                "calculate enthalpy changes using bond energies or enthalpy cycles"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "6. Electrochemistry",
+                    "subtopics": [
+                        {
+                            "name": "6.1 Redox processes",
+                            "details": [
+                                "calculate oxidation numbers of elements in compounds and ions",
+                                "describe and explain redox processes in terms of electron transfer and changes in oxidation number",
+                                "identify oxidising and reducing agents"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "7. Equilibria",
+                    "subtopics": [
+                        {
+                            "name": "7.1 Chemical equilibria",
+                            "details": [
+                                "explain the terms reversible reaction and dynamic equilibrium",
+                                "state Le Chatelier’s principle and apply it to deduce the qualitative effects of changes in temperature, pressure or concentration",
+                                "deduce expressions for equilibrium constants Kc and Kp",
+                                "calculate values of Kc and Kp from experimental data"
+                            ]
+                        },
+                        {
+                            "name": "7.2 Brønsted–Lowry theory of acids and bases",
+                            "details": [
+                                "describe acids and bases in terms of proton transfer",
+                                "identify conjugate acid-base pairs",
+                                "define the terms strong acid, weak acid, strong base and weak base",
+                                "define pH and calculate pH values for strong acids and strong bases"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "8. Reaction kinetics",
+                    "subtopics": [
+                        {
+                            "name": "8.1 Rate of reaction",
+                            "details": [
+                                "explain the term rate of reaction",
+                                "explain, in terms of the collision theory, the effect of concentration and pressure changes on the rate of a reaction",
+                                "calculate the rate of a reaction from a tangent to a graph of concentration vs time"
+                            ]
+                        },
+                        {
+                            "name": "8.2 Effect of temperature on reaction rates",
+                            "details": [
+                                "define activation energy, EA",
+                                "sketch and use the Boltzmann distribution to explain the effect of temperature on the rate of a reaction"
+                            ]
+                        },
+                        {
+                            "name": "8.3 Catalysts",
+                            "details": [
+                                "explain that catalysts lower the activation energy by providing an alternative reaction pathway",
+                                "describe the mode of action of homogeneous and heterogeneous catalysts"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "9. The Periodic Table: chemical periodicity",
+                    "subtopics": [
+                        {
+                            "name": "9.1 Periodicity of physical properties",
+                            "details": [
+                                "describe and explain the variations in atomic radius, ionic radius, melting point and electrical conductivity for elements in Period 3"
+                            ]
+                        },
+                        {
+                            "name": "9.2 Periodicity of chemical properties",
+                            "details": [
+                                "describe the reactions of Period 3 elements with oxygen, chlorine and water",
+                                "describe the reactions of the oxides and chlorides of Period 3 elements with water",
+                                "explain the acid/base behaviour of the oxides and hydroxides of Period 3 elements"
+                            ]
+                        },
+                        {
+                            "name": "9.3 Chemical periodicity of other elements",
+                            "details": [
+                                "predict the properties of elements and their compounds given information about their position in the Periodic Table"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "10. Group 2",
+                    "subtopics": [
+                        {
+                            "name": "10.1 Similarities and trends in properties",
+                            "details": [
+                                "describe the reactions of Group 2 elements with oxygen, water and dilute acids",
+                                "describe the thermal decomposition of Group 2 nitrates and carbonates",
+                                "state the trends in solubility of Group 2 hydroxides and sulfates"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "11. Group 17",
+                    "subtopics": [
+                        {
+                            "name": "11.1 Physical properties of Group 17",
+                            "details": [
+                                "describe the trends in colour, volatility and state at room temperature for Group 17 elements"
+                            ]
+                        },
+                        {
+                            "name": "11.2 Chemical properties of halogens and hydrogen halides",
+                            "details": [
+                                "describe the relative reactivity of the halogens as oxidising agents",
+                                "describe the relative thermal stability of the hydrogen halides"
+                            ]
+                        },
+                        {
+                            "name": "11.3 Reactions of halide ions",
+                            "details": [
+                                "describe the relative reactivity of halide ions as reducing agents",
+                                "describe the reactions of halide ions with silver nitrate followed by ammonia"
+                            ]
+                        },
+                        {
+                            "name": "11.4 Reactions of chlorine",
+                            "details": [
+                                "describe the reaction of chlorine with cold and hot aqueous sodium hydroxide (disproportionation)",
+                                "explain the use of chlorine in water purification"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "12. Nitrogen and sulfur",
+                    "subtopics": [
+                        {
+                            "name": "12.1 Nitrogen and sulfur",
+                            "details": [
+                                "explain the lack of reactivity of nitrogen gas",
+                                "explain the basicity of ammonia",
+                                "describe the formation of atmospheric oxides of nitrogen and sulfur and their role in acid rain formation"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "13. Introduction to AS Level organic chemistry",
+                    "subtopics": [
+                        {
+                            "name": "13.1 Formulae, functional groups and naming",
+                            "details": [
+                                "interpret and use the general, structural, displayed and skeletal formulae of the classes of organic compounds",
+                                "apply IUPAC nomenclature to aliphatic organic compounds"
+                            ]
+                        },
+                        {
+                            "name": "13.2 Characteristic organic reactions",
+                            "details": [
+                                "define the terms homolytic and heterolytic fission, free radical, initiation, propagation, termination, nucleophile, electrophile, addition, substitution, elimination, hydrolysis, condensation, oxidation and reduction",
+                                "describe reaction mechanisms using curly arrows"
+                            ]
+                        },
+                        {
+                            "name": "13.3 Isomerism",
+                            "details": [
+                                "describe structural isomerism (chain, position, functional group)",
+                                "describe stereoisomerism: geometrical (cis/trans) and optical (chiral centres)"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "14. Hydrocarbons",
+                    "subtopics": [
+                        {
+                            "name": "14.1 Alkanes",
+                            "details": [
+                                "describe the unreactivity of alkanes (non-polar bonds)",
+                                "describe the complete and incomplete combustion of alkanes",
+                                "describe the free-radical substitution of alkanes by chlorine and bromine"
+                            ]
+                        },
+                        {
+                            "name": "14.2 Alkenes",
+                            "details": [
+                                "describe the electrophilic addition reactions of alkenes with hydrogen, steam, hydrogen halides and halogens",
+                                "describe the oxidation of alkenes with cold, dilute KMnO4 and hot, concentrated KMnO4",
+                                "describe addition polymerisation"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "15. Halogen compounds",
+                    "subtopics": [
+                        {
+                            "name": "15.1 Halogenoalkanes",
+                            "details": [
+                                "classify halogenoalkanes as primary, secondary or tertiary",
+                                "describe the nucleophilic substitution reactions of halogenoalkanes (SN1 and SN2 mechanisms)",
+                                "describe the elimination reactions of halogenoalkanes"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "16. Hydroxy compounds",
+                    "subtopics": [
+                        {
+                            "name": "16.1 Alcohols",
+                            "details": [
+                                "classify alcohols as primary, secondary or tertiary",
+                                "describe the combustion of alcohols",
+                                "describe the substitution reactions to form halogenoalkanes",
+                                "describe the reaction with sodium",
+                                "describe the oxidation of alcohols",
+                                "describe the dehydration of alcohols to form alkenes",
+                                "describe the formation of esters"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "17. Carbonyl compounds",
+                    "subtopics": [
+                        {
+                            "name": "17.1 Aldehydes and ketones",
+                            "details": [
+                                "describe the oxidation of aldehydes",
+                                "describe the reduction of aldehydes and ketones",
+                                "describe the nucleophilic addition of HCN to aldehydes and ketones",
+                                "describe the reaction with 2,4-DNPH and the iodoform test"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "18. Carboxylic acids and derivatives",
+                    "subtopics": [
+                        {
+                            "name": "18.1 Carboxylic acids",
+                            "details": [
+                                "describe the formation of carboxylic acids from alcohols, aldehydes and nitriles",
+                                "describe the reactions of carboxylic acids with metals, alkalis, carbonates and alcohols"
+                            ]
+                        },
+                        {
+                            "name": "18.2 Esters",
+                            "details": [
+                                "describe the acid and base hydrolysis of esters"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "19. Nitrogen compounds",
+                    "subtopics": [
+                        {
+                            "name": "19.1 Primary amines",
+                            "details": [
+                                "describe the formation of primary amines from halogenoalkanes and nitriles"
+                            ]
+                        },
+                        {
+                            "name": "19.2 Nitriles and hydroxynitriles",
+                            "details": [
+                                "describe the formation of nitriles from halogenoalkanes",
+                                "describe the formation of hydroxynitriles from aldehydes and ketones",
+                                "describe the hydrolysis of nitriles"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "20. Polymerisation",
+                    "subtopics": [
+                        {
+                            "name": "20.1 Addition polymerisation",
+                            "details": [
+                                "identify the repeat unit of an addition polymer",
+                                "identify the monomer(s) present in a given section of an addition polymer",
+                                "recognise the difficulty of the disposal of poly(alkenes)"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "21. Organic synthesis",
+                    "subtopics": [
+                        {
+                            "name": "21.1 Organic synthesis",
+                            "details": [
+                                "deduce reaction pathways given the starting materials and the product",
+                                "identify the functional groups present in a molecule"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "22. Analytical techniques",
+                    "subtopics": [
+                        {
+                            "name": "22.1 Infrared spectroscopy",
+                            "details": [
+                                "analyse an infrared spectrum to identify the functional groups present in a molecule"
+                            ]
+                        },
+                        {
+                            "name": "22.2 Mass spectrometry",
+                            "details": [
+                                "analyse mass spectra to identify the molecular ion peak and deduce the relative molecular mass",
+                                "deduce the number of carbon atoms in a compound using the M+1 peak",
+                                "identify fragmentation peaks"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "paper_code": "P2",
+            "paper_name": "AS Level Structured Questions",
+            "valid_question_types": [
+                "Calculation",
+                "Definition",
+                "Mechanism",
+                "Explanation",
+                "Synthesis"
+            ],
+            "topics": [
+                {
+                    "name": "1. Atomic structure",
+                    "subtopics": [
+                        {
+                            "name": "1.1 Particles in the atom and atomic radius",
+                            "details": [
+                                "understand that atoms are mostly empty space with a small, dense, positively charged nucleus",
+                                "identify and describe protons, neutrons and electrons in terms of relative charge and relative mass",
+                                "understand the terms atomic (proton) number and mass (nucleon) number",
+                                "describe the distribution of mass and charge within an atom",
+                                "describe the behavior of beams of protons, neutrons and electrons in electric fields",
+                                "determine the numbers of protons, neutrons and electrons present in both atoms and ions",
+                                "state and explain the trends in atomic radius and ionic radius across a period and down a group"
+                            ]
+                        },
+                        {
+                            "name": "1.2 Isotopes",
+                            "details": [
+                                "define the term isotope",
+                                "understand the notation xKy for isotopes",
+                                "explain why isotopes of the same element have the same chemical properties",
+                                "explain why isotopes of the same element have different physical properties (limited to mass and density)"
+                            ]
+                        },
+                        {
+                            "name": "1.3 Electrons, energy levels and atomic orbitals",
+                            "details": [
+                                "understand the terms shell, sub-shell and orbital",
+                                "describe the number of orbitals that make up s, p and d sub-shells and the number of electrons that can fill s, p and d sub-shells",
+                                "describe the shapes of s and p orbitals",
+                                "state the electronic configuration of atoms and ions for the elements hydrogen to krypton",
+                                "explain the electronic configurations in terms of energy of the electrons and inter-electron repulsion",
+                                "use the electrons-in-boxes notation"
+                            ]
+                        },
+                        {
+                            "name": "1.4 Ionisation energy",
+                            "details": [
+                                "define the term first ionisation energy",
+                                "construct equations to represent first, second and subsequent ionisation energies",
+                                "identify and explain the trends in ionisation energies across a period and down a group",
+                                "explain the trends in ionisation energy in terms of nuclear charge, atomic/ionic radius, shielding and spin-pair repulsion"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "2. Atoms, molecules and stoichiometry",
+                    "subtopics": [
+                        {
+                            "name": "2.1 Relative masses of atoms and molecules",
+                            "details": [
+                                "define the unified atomic mass unit",
+                                "define relative atomic mass, Ar, relative molecular mass, Mr, and relative formula mass"
+                            ]
+                        },
+                        {
+                            "name": "2.2 The mole and the Avogadro constant",
+                            "details": [
+                                "define and use the term mole in terms of the Avogadro constant"
+                            ]
+                        },
+                        {
+                            "name": "2.3 Formulae",
+                            "details": [
+                                "write formulae of ionic compounds from ionic charges",
+                                "construct balanced chemical equations (including state symbols)",
+                                "construct ionic equations from chemical equations",
+                                "define and use the terms empirical formula and molecular formula",
+                                "understand the terms anhydrous, hydrated and water of crystallisation"
+                            ]
+                        },
+                        {
+                            "name": "2.4 Reacting masses and volumes (of solutions and gases)",
+                            "details": [
+                                "perform calculations involving reacting masses",
+                                "perform calculations involving volumes of gases (using the molar gas volume)",
+                                "perform calculations involving concentrations and volumes of solutions",
+                                "calculate percentage yield and percentage purity",
+                                "identify the limiting reagent in a reaction"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "3. Chemical bonding",
+                    "subtopics": [
+                        {
+                            "name": "3.1 Electronegativity and bonding",
+                            "details": [
+                                "define electronegativity",
+                                "explain the factors influencing electronegativity and the trends across a period and down a group",
+                                "use electronegativity values to predict the type of bonding (ionic or covalent)"
+                            ]
+                        },
+                        {
+                            "name": "3.2 Ionic bonding",
+                            "details": [
+                                "describe ionic bonding as the electrostatic attraction between oppositely charged ions",
+                                "describe the giant ionic lattice structures of sodium chloride and magnesium oxide"
+                            ]
+                        },
+                        {
+                            "name": "3.3 Metallic bonding",
+                            "details": [
+                                "describe metallic bonding as the electrostatic attraction between positive metal ions and a sea of delocalised electrons"
+                            ]
+                        },
+                        {
+                            "name": "3.4 Covalent bonding and coordinate bonding",
+                            "details": [
+                                "define covalent bonding and coordinate (dative covalent) bonding",
+                                "describe sigma (σ) and pi (π) bonds",
+                                "explain hybridisation (sp, sp2, sp3)",
+                                "use bond energy and bond length values to compare the reactivity of covalent bonds"
+                            ]
+                        },
+                        {
+                            "name": "3.5 Shapes of molecules",
+                            "details": [
+                                "state and explain the shapes of molecules and ions using VSEPR theory",
+                                "predict bond angles in molecules and ions"
+                            ]
+                        },
+                        {
+                            "name": "3.6 Intermolecular forces",
+                            "details": [
+                                "describe hydrogen bonding",
+                                "explain the concept of bond polarity and permanent dipoles",
+                                "describe van der Waals' forces (instantaneous dipole – induced dipole and permanent dipole – permanent dipole)"
+                            ]
+                        },
+                        {
+                            "name": "3.7 Dot-and-cross diagrams",
+                            "details": [
+                                "draw dot-and-cross diagrams to represent the bonding in ionic and covalent compounds"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "4. States of matter",
+                    "subtopics": [
+                        {
+                            "name": "4.1 The gaseous state",
+                            "details": [
+                                "explain the origin of pressure in a gas",
+                                "state the basic assumptions of the kinetic theory of ideal gases",
+                                "use the ideal gas equation pV = nRT"
+                            ]
+                        },
+                        {
+                            "name": "4.2 Bonding and structure",
+                            "details": [
+                                "describe the lattice structures of crystalline solids: giant ionic, simple molecular, giant molecular and giant metallic",
+                                "relate the physical properties of a substance to its structure and bonding"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "5. Chemical energetics",
+                    "subtopics": [
+                        {
+                            "name": "5.1 Enthalpy change, ΔH",
+                            "details": [
+                                "understand that chemical reactions are accompanied by energy changes (exothermic and endothermic)",
+                                "construct and interpret reaction pathway diagrams",
+                                "define standard enthalpy changes of reaction, formation, combustion and neutralisation",
+                                "calculate enthalpy changes from experimental results using q = mcΔT"
+                            ]
+                        },
+                        {
+                            "name": "5.2 Hess’s Law",
+                            "details": [
+                                "apply Hess’s Law to construct energy cycles",
+                                "calculate enthalpy changes using bond energies or enthalpy cycles"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "6. Electrochemistry",
+                    "subtopics": [
+                        {
+                            "name": "6.1 Redox processes",
+                            "details": [
+                                "calculate oxidation numbers of elements in compounds and ions",
+                                "describe and explain redox processes in terms of electron transfer and changes in oxidation number",
+                                "identify oxidising and reducing agents"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "7. Equilibria",
+                    "subtopics": [
+                        {
+                            "name": "7.1 Chemical equilibria",
+                            "details": [
+                                "explain the terms reversible reaction and dynamic equilibrium",
+                                "state Le Chatelier’s principle and apply it to deduce the qualitative effects of changes in temperature, pressure or concentration",
+                                "deduce expressions for equilibrium constants Kc and Kp",
+                                "calculate values of Kc and Kp from experimental data"
+                            ]
+                        },
+                        {
+                            "name": "7.2 Brønsted–Lowry theory of acids and bases",
+                            "details": [
+                                "describe acids and bases in terms of proton transfer",
+                                "identify conjugate acid-base pairs",
+                                "define the terms strong acid, weak acid, strong base and weak base",
+                                "define pH and calculate pH values for strong acids and strong bases"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "8. Reaction kinetics",
+                    "subtopics": [
+                        {
+                            "name": "8.1 Rate of reaction",
+                            "details": [
+                                "explain the term rate of reaction",
+                                "explain, in terms of the collision theory, the effect of concentration and pressure changes on the rate of a reaction",
+                                "calculate the rate of a reaction from a tangent to a graph of concentration vs time"
+                            ]
+                        },
+                        {
+                            "name": "8.2 Effect of temperature on reaction rates",
+                            "details": [
+                                "define activation energy, EA",
+                                "sketch and use the Boltzmann distribution to explain the effect of temperature on the rate of a reaction"
+                            ]
+                        },
+                        {
+                            "name": "8.3 Catalysts",
+                            "details": [
+                                "explain that catalysts lower the activation energy by providing an alternative reaction pathway",
+                                "describe the mode of action of homogeneous and heterogeneous catalysts"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "9. The Periodic Table: chemical periodicity",
+                    "subtopics": [
+                        {
+                            "name": "9.1 Periodicity of physical properties",
+                            "details": [
+                                "describe and explain the variations in atomic radius, ionic radius, melting point and electrical conductivity for elements in Period 3"
+                            ]
+                        },
+                        {
+                            "name": "9.2 Periodicity of chemical properties",
+                            "details": [
+                                "describe the reactions of Period 3 elements with oxygen, chlorine and water",
+                                "describe the reactions of the oxides and chlorides of Period 3 elements with water",
+                                "explain the acid/base behaviour of the oxides and hydroxides of Period 3 elements"
+                            ]
+                        },
+                        {
+                            "name": "9.3 Chemical periodicity of other elements",
+                            "details": [
+                                "predict the properties of elements and their compounds given information about their position in the Periodic Table"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "10. Group 2",
+                    "subtopics": [
+                        {
+                            "name": "10.1 Similarities and trends in properties",
+                            "details": [
+                                "describe the reactions of Group 2 elements with oxygen, water and dilute acids",
+                                "describe the thermal decomposition of Group 2 nitrates and carbonates",
+                                "state the trends in solubility of Group 2 hydroxides and sulfates"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "11. Group 17",
+                    "subtopics": [
+                        {
+                            "name": "11.1 Physical properties of Group 17",
+                            "details": [
+                                "describe the trends in colour, volatility and state at room temperature for Group 17 elements"
+                            ]
+                        },
+                        {
+                            "name": "11.2 Chemical properties of halogens and hydrogen halides",
+                            "details": [
+                                "describe the relative reactivity of the halogens as oxidising agents",
+                                "describe the relative thermal stability of the hydrogen halides"
+                            ]
+                        },
+                        {
+                            "name": "11.3 Reactions of halide ions",
+                            "details": [
+                                "describe the relative reactivity of halide ions as reducing agents",
+                                "describe the reactions of halide ions with silver nitrate followed by ammonia"
+                            ]
+                        },
+                        {
+                            "name": "11.4 Reactions of chlorine",
+                            "details": [
+                                "describe the reaction of chlorine with cold and hot aqueous sodium hydroxide (disproportionation)",
+                                "explain the use of chlorine in water purification"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "12. Nitrogen and sulfur",
+                    "subtopics": [
+                        {
+                            "name": "12.1 Nitrogen and sulfur",
+                            "details": [
+                                "explain the lack of reactivity of nitrogen gas",
+                                "explain the basicity of ammonia",
+                                "describe the formation of atmospheric oxides of nitrogen and sulfur and their role in acid rain formation"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "13. Introduction to AS Level organic chemistry",
+                    "subtopics": [
+                        {
+                            "name": "13.1 Formulae, functional groups and naming",
+                            "details": [
+                                "interpret and use the general, structural, displayed and skeletal formulae of the classes of organic compounds",
+                                "apply IUPAC nomenclature to aliphatic organic compounds"
+                            ]
+                        },
+                        {
+                            "name": "13.2 Characteristic organic reactions",
+                            "details": [
+                                "define the terms homolytic and heterolytic fission, free radical, initiation, propagation, termination, nucleophile, electrophile, addition, substitution, elimination, hydrolysis, condensation, oxidation and reduction",
+                                "describe reaction mechanisms using curly arrows"
+                            ]
+                        },
+                        {
+                            "name": "13.3 Isomerism",
+                            "details": [
+                                "describe structural isomerism (chain, position, functional group)",
+                                "describe stereoisomerism: geometrical (cis/trans) and optical (chiral centres)"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "14. Hydrocarbons",
+                    "subtopics": [
+                        {
+                            "name": "14.1 Alkanes",
+                            "details": [
+                                "describe the unreactivity of alkanes (non-polar bonds)",
+                                "describe the complete and incomplete combustion of alkanes",
+                                "describe the free-radical substitution of alkanes by chlorine and bromine"
+                            ]
+                        },
+                        {
+                            "name": "14.2 Alkenes",
+                            "details": [
+                                "describe the electrophilic addition reactions of alkenes with hydrogen, steam, hydrogen halides and halogens",
+                                "describe the oxidation of alkenes with cold, dilute KMnO4 and hot, concentrated KMnO4",
+                                "describe addition polymerisation"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "15. Halogen compounds",
+                    "subtopics": [
+                        {
+                            "name": "15.1 Halogenoalkanes",
+                            "details": [
+                                "classify halogenoalkanes as primary, secondary or tertiary",
+                                "describe the nucleophilic substitution reactions of halogenoalkanes (SN1 and SN2 mechanisms)",
+                                "describe the elimination reactions of halogenoalkanes"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "16. Hydroxy compounds",
+                    "subtopics": [
+                        {
+                            "name": "16.1 Alcohols",
+                            "details": [
+                                "classify alcohols as primary, secondary or tertiary",
+                                "describe the combustion of alcohols",
+                                "describe the substitution reactions to form halogenoalkanes",
+                                "describe the reaction with sodium",
+                                "describe the oxidation of alcohols",
+                                "describe the dehydration of alcohols to form alkenes",
+                                "describe the formation of esters"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "17. Carbonyl compounds",
+                    "subtopics": [
+                        {
+                            "name": "17.1 Aldehydes and ketones",
+                            "details": [
+                                "describe the oxidation of aldehydes",
+                                "describe the reduction of aldehydes and ketones",
+                                "describe the nucleophilic addition of HCN to aldehydes and ketones",
+                                "describe the reaction with 2,4-DNPH and the iodoform test"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "18. Carboxylic acids and derivatives",
+                    "subtopics": [
+                        {
+                            "name": "18.1 Carboxylic acids",
+                            "details": [
+                                "describe the formation of carboxylic acids from alcohols, aldehydes and nitriles",
+                                "describe the reactions of carboxylic acids with metals, alkalis, carbonates and alcohols"
+                            ]
+                        },
+                        {
+                            "name": "18.2 Esters",
+                            "details": [
+                                "describe the acid and base hydrolysis of esters"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "19. Nitrogen compounds",
+                    "subtopics": [
+                        {
+                            "name": "19.1 Primary amines",
+                            "details": [
+                                "describe the formation of primary amines from halogenoalkanes and nitriles"
+                            ]
+                        },
+                        {
+                            "name": "19.2 Nitriles and hydroxynitriles",
+                            "details": [
+                                "describe the formation of nitriles from halogenoalkanes",
+                                "describe the formation of hydroxynitriles from aldehydes and ketones",
+                                "describe the hydrolysis of nitriles"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "20. Polymerisation",
+                    "subtopics": [
+                        {
+                            "name": "20.1 Addition polymerisation",
+                            "details": [
+                                "identify the repeat unit of an addition polymer",
+                                "identify the monomer(s) present in a given section of an addition polymer",
+                                "recognise the difficulty of the disposal of poly(alkenes)"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "21. Organic synthesis",
+                    "subtopics": [
+                        {
+                            "name": "21.1 Organic synthesis",
+                            "details": [
+                                "deduce reaction pathways given the starting materials and the product",
+                                "identify the functional groups present in a molecule"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "22. Analytical techniques",
+                    "subtopics": [
+                        {
+                            "name": "22.1 Infrared spectroscopy",
+                            "details": [
+                                "analyse an infrared spectrum to identify the functional groups present in a molecule"
+                            ]
+                        },
+                        {
+                            "name": "22.2 Mass spectrometry",
+                            "details": [
+                                "analyse mass spectra to identify the molecular ion peak and deduce the relative molecular mass",
+                                "deduce the number of carbon atoms in a compound using the M+1 peak",
+                                "identify fragmentation peaks"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "paper_code": "P4",
+            "paper_name": "A Level Structured Questions",
+            "valid_question_types": [
+                "Complex Calculation",
+                "Analysis",
+                "Synthesis",
+                "Derivation"
+            ],
+            "topics": [
+                {
+                    "name": "23. Chemical energetics",
+                    "subtopics": [
+                        {
+                            "name": "23.1 Lattice energy and Born-Haber cycles",
+                            "details": [
+                                "define lattice energy, enthalpy change of atomisation and electron affinity",
+                                "construct and use Born-Haber cycles to calculate lattice energy or other enthalpy changes",
+                                "explain the effect of ionic charge and ionic radius on the numerical magnitude of lattice energy"
+                            ]
+                        },
+                        {
+                            "name": "23.2 Enthalpies of solution and hydration",
+                            "details": [
+                                "define enthalpy change of solution and enthalpy change of hydration",
+                                "use energy cycles involving enthalpy change of solution, lattice energy and enthalpy change of hydration",
+                                "explain the effect of ionic charge and ionic radius on the numerical magnitude of enthalpy change of hydration"
+                            ]
+                        },
+                        {
+                            "name": "23.3 Entropy change, ΔS",
+                            "details": [
+                                "define the term entropy",
+                                "predict the sign of the entropy change for a given reaction",
+                                "calculate standard entropy changes from standard entropy values"
+                            ]
+                        },
+                        {
+                            "name": "23.4 Gibbs free energy change, ΔG",
+                            "details": [
+                                "use the Gibbs equation ΔG = ΔH - TΔS",
+                                "predict the feasibility of a reaction using ΔG"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "24. Electrochemistry",
+                    "subtopics": [
+                        {
+                            "name": "24.1 Electrolysis",
+                            "details": [
+                                "predict the identity of the substances liberated during electrolysis",
+                                "calculate the quantity of charge passed during electrolysis",
+                                "calculate the mass and/or volume of substance liberated during electrolysis"
+                            ]
+                        },
+                        {
+                            "name": "24.2 Standard electrode potentials",
+                            "details": [
+                                "define standard electrode potential, Eθ, and standard cell potential, Eθcell",
+                                "describe the standard hydrogen electrode",
+                                "use standard electrode potentials to calculate standard cell potentials",
+                                "use the Nernst equation to predict the effect of concentration on electrode potential",
+                                "use the relationship ΔG = -nEθcellF"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "25. Equilibria",
+                    "subtopics": [
+                        {
+                            "name": "25.1 Acids and bases",
+                            "details": [
+                                "calculate the pH of strong acids, strong bases, weak acids and buffer solutions",
+                                "define and use the solubility product, Ksp",
+                                "explain the common ion effect"
+                            ]
+                        },
+                        {
+                            "name": "25.2 Partition coefficients",
+                            "details": [
+                                "define and use the partition coefficient, Kpc"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "26. Reaction kinetics",
+                    "subtopics": [
+                        {
+                            "name": "26.1 Rate equations",
+                            "details": [
+                                "explain and use the terms rate equation, order of reaction, rate constant, half-life, rate-determining step",
+                                "construct and use rate equations",
+                                "deduce the order of a reaction from experimental data",
+                                "suggest a multi-step mechanism for a reaction"
+                            ]
+                        },
+                        {
+                            "name": "26.2 Catalysis",
+                            "details": [
+                                "describe the mode of action of homogeneous and heterogeneous catalysts",
+                                "explain the effect of a catalyst on the rate constant"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "27. Group 2",
+                    "subtopics": [
+                        {
+                            "name": "27.1 Trends in properties",
+                            "details": [
+                                "explain the trends in thermal stability of Group 2 carbonates and nitrates in terms of ionic radius and charge density",
+                                "explain the trends in solubility of Group 2 hydroxides and sulfates in terms of lattice energy and enthalpy change of hydration"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "28. Chemistry of transition elements",
+                    "subtopics": [
+                        {
+                            "name": "28.1 General properties",
+                            "details": [
+                                "define a transition element in terms of d-block electrons",
+                                "explain why transition elements have variable oxidation states, behave as catalysts, form complex ions and form coloured compounds"
+                            ]
+                        },
+                        {
+                            "name": "28.2 Ligands and complex formation",
+                            "details": [
+                                "define the term ligand",
+                                "describe the geometry of transition metal complexes (linear, octahedral, tetrahedral, square planar)",
+                                "describe ligand exchange reactions"
+                            ]
+                        },
+                        {
+                            "name": "28.3 Colour of complexes",
+                            "details": [
+                                "explain the splitting of d-orbitals in transition metal complexes",
+                                "explain the colour of transition metal complexes in terms of the absorption of light"
+                            ]
+                        },
+                        {
+                            "name": "28.4 Stereoisomerism",
+                            "details": [
+                                "describe and illustrate stereoisomerism in transition metal complexes (geometrical and optical)"
+                            ]
+                        },
+                        {
+                            "name": "28.5 Stability constants",
+                            "details": [
+                                "define and use the stability constant, Kstab, of a complex ion"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "29. Introduction to A Level organic chemistry",
+                    "subtopics": [
+                        {
+                            "name": "29.1 Formulae, functional groups and naming",
+                            "details": [
+                                "apply IUPAC nomenclature to aromatic and cyclic compounds"
+                            ]
+                        },
+                        {
+                            "name": "29.2 Characteristic organic reactions",
+                            "details": [
+                                "describe the mechanism of electrophilic substitution in arenes",
+                                "describe the mechanism of addition-elimination reactions"
+                            ]
+                        },
+                        {
+                            "name": "29.3 Shapes of aromatic organic molecules",
+                            "details": [
+                                "describe the structure of benzene in terms of a delocalised pi system",
+                                "explain the stability of benzene compared to alkenes"
+                            ]
+                        },
+                        {
+                            "name": "29.4 Isomerism: optical",
+                            "details": [
+                                "understand the terms optical activity, racemic mixture and chiral catalyst",
+                                "describe the importance of chirality in drug synthesis"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "30. Hydrocarbons",
+                    "subtopics": [
+                        {
+                            "name": "30.1 Arenes",
+                            "details": [
+                                "describe the electrophilic substitution reactions of benzene and methylbenzene (nitration, halogenation, Friedel-Crafts alkylation and acylation)",
+                                "explain the directing effects of substituents on the benzene ring"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "31. Halogen compounds",
+                    "subtopics": [
+                        {
+                            "name": "31.1 Halogen compounds",
+                            "details": [
+                                "describe the formation of halogenoarenes",
+                                "compare the reactivity of halogenoarenes with halogenoalkanes"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "32. Hydroxy compounds",
+                    "subtopics": [
+                        {
+                            "name": "32.1 Alcohols",
+                            "details": [
+                                "describe the reaction of alcohols with acyl chlorides to form esters"
+                            ]
+                        },
+                        {
+                            "name": "32.2 Phenol",
+                            "details": [
+                                "describe the acidity of phenol",
+                                "describe the reactions of phenol with bases, sodium, diazonium salts, nitric acid and bromine"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "33. Carboxylic acids and derivatives",
+                    "subtopics": [
+                        {
+                            "name": "33.1 Carboxylic acids",
+                            "details": [
+                                "describe the formation of carboxylic acids from nitriles, amides and esters",
+                                "compare the relative acidity of carboxylic acids, phenol, alcohols and water"
+                            ]
+                        },
+                        {
+                            "name": "33.2 Esters",
+                            "details": [
+                                "describe the formation of esters from acyl chlorides and phenols"
+                            ]
+                        },
+                        {
+                            "name": "33.3 Acyl chlorides",
+                            "details": [
+                                "describe the formation of acyl chlorides from carboxylic acids",
+                                "describe the hydrolysis of acyl chlorides",
+                                "describe the reactions of acyl chlorides with alcohols, phenols, ammonia and primary amines"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "34. Nitrogen compounds",
+                    "subtopics": [
+                        {
+                            "name": "34.1 Primary and secondary amines",
+                            "details": [
+                                "describe the formation of amines from amides and nitrobenzene",
+                                "compare the basicity of amines"
+                            ]
+                        },
+                        {
+                            "name": "34.2 Phenylamine and azo compounds",
+                            "details": [
+                                "describe the formation of phenylamine",
+                                "describe the reaction of phenylamine with nitrous acid to form diazonium salts",
+                                "describe the coupling reactions of diazonium salts to form azo dyes"
+                            ]
+                        },
+                        {
+                            "name": "34.3 Amides",
+                            "details": [
+                                "describe the formation of amides from acyl chlorides",
+                                "describe the hydrolysis of amides",
+                                "explain the relative lack of basicity of amides"
+                            ]
+                        },
+                        {
+                            "name": "34.4 Amino acids",
+                            "details": [
+                                "describe the acid/base properties of amino acids and the formation of zwitterions",
+                                "describe the formation of peptide bonds"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "35. Polymerisation",
+                    "subtopics": [
+                        {
+                            "name": "35.1 Condensation polymerisation",
+                            "details": [
+                                "describe the formation of polyesters and polyamides",
+                                "identify the monomers used to form a given condensation polymer"
+                            ]
+                        },
+                        {
+                            "name": "35.2 Predicting type of polymerisation",
+                            "details": [
+                                "predict whether a given monomer will undergo addition or condensation polymerisation"
+                            ]
+                        },
+                        {
+                            "name": "35.3 Degradable polymers",
+                            "details": [
+                                "explain why condensation polymers are generally biodegradable whereas addition polymers are not"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "36. Organic synthesis",
+                    "subtopics": [
+                        {
+                            "name": "36.1 Organic synthesis",
+                            "details": [
+                                "design multi-step synthetic routes for organic molecules",
+                                "explain the use of protecting groups (knowledge of specific protecting groups is not required)"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "37. Analytical techniques",
+                    "subtopics": [
+                        {
+                            "name": "37.1 Thin-layer chromatography",
+                            "details": [
+                                "interpret chromatograms and calculate Rf values"
+                            ]
+                        },
+                        {
+                            "name": "37.2 Gas / liquid chromatography",
+                            "details": [
+                                "interpret gas/liquid chromatograms in terms of retention times and percentage composition"
+                            ]
+                        },
+                        {
+                            "name": "37.3 Carbon-13 NMR spectroscopy",
+                            "details": [
+                                "analyse Carbon-13 NMR spectra to determine the number of carbon environments",
+                                "predict the number of peaks in a Carbon-13 NMR spectrum"
+                            ]
+                        },
+                        {
+                            "name": "37.4 Proton (1H) NMR spectroscopy",
+                            "details": [
+                                "analyse Proton NMR spectra to determine the number of proton environments and their relative numbers",
+                                "interpret splitting patterns using the n+1 rule",
+                                "identify the chemical shift values for protons in different environments using the Data Booklet"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

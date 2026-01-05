@@ -1,37 +1,79 @@
-from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File, Form, Query
-from typing import List, Optional, Union
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.orm import Session
-from . import models, schemas, crud
-from .database import SessionLocal, engine, get_db
-from fastapi.staticfiles import StaticFiles
+# =============================================================================
+# 导入语句 - 标准库
+# =============================================================================
+import html
 import os
+import re
 import shutil
+import tempfile
+import traceback
+import uuid
+from datetime import timedelta
+from typing import List, Optional, Union
+from urllib.parse import quote
+
+# =============================================================================
+# 导入语句 - 第三方库
+# =============================================================================
+from fastapi import (
+    Depends,
+    FastAPI,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Response,
+    UploadFile,
+    status
+)
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+
+# =============================================================================
+# 导入语句 - 本地模块
+# =============================================================================
+from . import auth, crud, models, pdf_engine, schemas, utils
+from .config import logger, settings
+from .database import SessionLocal, engine, get_db
+from .zip_ingest import ZipIngestor
+from .services.generator import (
+    SmartExamGenerator,
+    GeneratorRequest,
+    TopicWeight,
+    SubtopicWeight,
+    DifficultyRatio
+)
+
+# --- XSS 防护函数 ---
+def sanitize_input(text: str) -> str:
+    """清理用户输入，防止 XSS 攻击"""
+    if text is None:
+        return None
+    # HTML 实体转义
+    text = html.escape(text)
+    # 移除可能的脚本标签残留
+    text = re.sub(r'<[^>]*>', '', text)
+    # 限制长度
+    return text[:200].strip()
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# CORS Configuration
-origins = [
-    "*", # Allow all origins for development (including file://)
-]
-
+# CORS Configuration - 从配置文件读取
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # 允许所有方法，包括 OPTIONS 预检
+    allow_headers=["*"],  # 允许所有请求头
 )
 
-# Mount static files
-# Assuming main.py is in backend/app/ and static is in backend/static/
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATIC_DIR = os.path.join(BASE_DIR, "static")
-
-# Ensure static directory exists
-os.makedirs(STATIC_DIR, exist_ok=True)
+# 静态文件目录 - 从配置文件读取
+STATIC_DIR = str(settings.STATIC_DIR)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 # app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "../frontend"), html=True), name="frontend")
@@ -43,6 +85,9 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.post("/tags/", response_model=schemas.Tag)
 def create_tag(tag: schemas.TagCreate, db: Session = Depends(get_db)):
+    # XSS 防护：清理输入
+    tag.name = sanitize_input(tag.name)
+    tag.category = sanitize_input(tag.category)
     return crud.create_tag(db=db, tag=tag)
 
 @app.get("/tags/", response_model=List[schemas.Tag])
@@ -51,6 +96,9 @@ def read_tags(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 
 @app.put("/tags/{tag_id}", response_model=schemas.Tag)
 def update_tag(tag_id: int, tag: schemas.TagCreate, db: Session = Depends(get_db)):
+    # XSS 防护：清理输入
+    tag.name = sanitize_input(tag.name)
+    tag.category = sanitize_input(tag.category)
     db_tag = crud.update_tag(db, tag_id, tag)
     if not db_tag:
         raise HTTPException(status_code=404, detail="Tag not found")
@@ -63,9 +111,29 @@ def delete_tag(tag_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Tag not found")
     return {"status": "success"}
 
-from fastapi import File, UploadFile, Form, Query
-import uuid
-from . import utils
+# --- 图片上传验证 ---
+async def validate_image(file: UploadFile) -> tuple[bool, str]:
+    """验证图片文件类型和大小"""
+    if file.content_type not in settings.ALLOWED_IMAGE_TYPES:
+        return False, f"不支持的文件类型: {file.content_type}。只允许 JPG/PNG 格式。"
+
+    content = await file.read()
+    await file.seek(0)
+
+    if len(content) > settings.MAX_IMAGE_SIZE:
+        size_mb = len(content) / (1024 * 1024)
+        max_mb = settings.MAX_IMAGE_SIZE / (1024 * 1024)
+        return False, f"文件过大: {size_mb:.2f}MB。最大允许 {max_mb:.0f}MB。"
+
+    return True, ""
+
+async def validate_images(files: List[UploadFile]) -> tuple[bool, str]:
+    """验证多个图片文件"""
+    for file in files:
+        valid, error = await validate_image(file)
+        if not valid:
+            return False, error
+    return True, ""
 
 # --- Questions API ---
 
@@ -83,7 +151,7 @@ def read_curriculums(db: Session = Depends(get_db)):
 
 
 @app.post("/questions/", response_model=schemas.Question)
-def create_question(
+async def create_question(
     question_images: List[UploadFile] = File(...),
     answer_images: List[UploadFile] = File(...),
     curriculum: str = Form(None),
@@ -97,6 +165,15 @@ def create_question(
     tag_name: str = Form(None),     # Level 2
     db: Session = Depends(get_db)
 ):
+    # 0. 验证图片文件
+    valid, error = await validate_images(question_images)
+    if not valid:
+        raise HTTPException(status_code=400, detail=f"题目图片验证失败: {error}")
+
+    valid, error = await validate_images(answer_images)
+    if not valid:
+        raise HTTPException(status_code=400, detail=f"答案图片验证失败: {error}")
+
     # 1. Save Images
     # Ensure uploads directory exists
     uploads_dir = os.path.join(STATIC_DIR, "uploads")
@@ -105,17 +182,17 @@ def create_question(
     def save_stitched_image(files: List[UploadFile]) -> str:
         # Stitch images
         stitched_img = utils.stitch_images(files)
-        
+
         if not stitched_img:
             return None
 
-        # Generate unique filename
-        filename = f"{uuid.uuid4()}.png"
+        # Generate unique filename (JPEG format)
+        filename = f"{uuid.uuid4()}.jpg"
         file_path = os.path.join(uploads_dir, filename)
-        
-        # Save
-        stitched_img.save(file_path, format="PNG")
-            
+
+        # Save as JPEG with good quality
+        stitched_img.save(file_path, format="JPEG", quality=92)
+
         # Return relative path for DB
         return f"static/uploads/{filename}"
 
@@ -144,7 +221,6 @@ def create_question(
 
 @app.exception_handler(Exception)
 async def debug_exception_handler(request, exc):
-    import traceback
     with open("global_error.log", "a") as f:
         f.write(f"Global Exception: {str(exc)}\n")
         f.write(traceback.format_exc())
@@ -175,10 +251,6 @@ def get_metadata(
         topic=topic,
         paper_number=paper_number
     )
-
-from fastapi.security import OAuth2PasswordRequestForm
-from datetime import timedelta
-from . import auth
 
 # --- Auth API ---
 
@@ -228,12 +300,10 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 # ... (subjects, curriculums, papers public or protected? Let's keep public for filters, or protect all?)
 # User asked for multi-user system. Let's assume login required for main data.
 
-from typing import Optional
-
 @app.get("/questions/", response_model=List[schemas.Question])
 def read_questions(
-    skip: int = 0, 
-    limit: int = 100, 
+    skip: int = 0,
+    limit: int = 100,
     curriculum: str = None,
     subject: str = None,
     year: int = None,
@@ -241,7 +311,7 @@ def read_questions(
     difficulty: models.DifficultyLevel = None,
     tag_category: List[str] = Query(None),
     tag_name: List[str] = Query(None),
-    id: Optional[int] = None,
+    id: List[int] = Query(None),  # 支持多个 ID: ?id=1&id=2&id=3
     # ExamSlicer fields - multi-select support
     paper_number: str = None,
     topic: List[str] = Query(None),  # Multi-select support
@@ -251,10 +321,10 @@ def read_questions(
     current_user: Optional[models.User] = Depends(auth.get_current_user_optional)
 ):
     questions = crud.get_questions(
-        db, 
-        skip=skip, 
-        limit=limit, 
-        curriculum=curriculum, 
+        db,
+        skip=skip,
+        limit=limit,
+        curriculum=curriculum,
         subject=subject,
         year=year,
         month=month,
@@ -270,10 +340,11 @@ def read_questions(
     
     # RBAC: Student (or Guest) cannot see answers
     # If no user (Guest) or Role is Student -> Hide Answers
-    if not current_user or current_user.role == "student":
-        for q in questions:
-            q.answer_image_path = "hidden" # Or None/Empty string. "hidden" allows frontend to show lock icon if desired.
-            
+    # TODO: 临时关闭答案隐藏，开发完成后需重新启用
+    # if not current_user or current_user.role == "student":
+    #     for q in questions:
+    #         q.answer_image_path = "hidden"
+
     return questions
 
 @app.put("/questions/{question_id}", response_model=schemas.Question)
@@ -294,86 +365,410 @@ def delete_question(question_id: int, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code=404, detail="Question not found")
     return {"status": "success"}
 
+
+# =============================================================================
+# Question Studio API - 题目工坊
+# =============================================================================
+
+@app.get("/api/questions/{question_id}", response_model=schemas.Question)
+def get_question_by_id(question_id: int, db: Session = Depends(get_db)):
+    """根据 ID 获取单个题目"""
+    db_question = crud.get_question(db, question_id)
+    if not db_question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return db_question
+
+
+@app.post("/api/upload/image")
+async def upload_single_image(
+    file: UploadFile = File(...),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    上传单张图片，用于 Question Studio
+
+    返回: {"filename": "xxx.jpg", "path": "static/uploads/xxx.jpg"}
+    """
+    # 权限检查：只有 admin 可以上传
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can upload images"
+        )
+
+    # 验证图片
+    valid, error = await validate_image(file)
+    if not valid:
+        raise HTTPException(status_code=400, detail=error)
+
+    # 保存图片
+    uploads_dir = os.path.join(STATIC_DIR, "uploads")
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    # 读取内容
+    content = await file.read()
+
+    # 转换为 JPEG 格式
+    from PIL import Image
+    import io
+    img = Image.open(io.BytesIO(content))
+    img = utils._convert_to_rgb(img)
+
+    # 生成唯一文件名
+    filename = f"{uuid.uuid4()}.jpg"
+    file_path = os.path.join(uploads_dir, filename)
+
+    # 保存为 JPEG
+    img.save(file_path, format="JPEG", quality=92)
+
+    relative_path = f"static/uploads/{filename}"
+    return {"filename": filename, "path": relative_path}
+
+
+@app.post("/api/upload/images")
+async def upload_multiple_images(
+    files: List[UploadFile] = File(...),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    上传多张图片并拼接，用于 Question Studio
+
+    多张图片会垂直拼接（右对齐）成一张图片。
+    返回: {"filename": "xxx.jpg", "path": "static/uploads/xxx.jpg"}
+    """
+    # 权限检查：只有 admin 可以上传
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can upload images"
+        )
+
+    if not files or len(files) == 0:
+        raise HTTPException(status_code=400, detail="No files uploaded")
+
+    # 验证所有图片
+    valid, error = await validate_images(files)
+    if not valid:
+        raise HTTPException(status_code=400, detail=error)
+
+    # 读取所有图片内容
+    image_bytes_list = []
+    for file in files:
+        content = await file.read()
+        image_bytes_list.append(content)
+
+    # 拼接图片
+    stitched_img = utils.stitch_images_from_bytes(image_bytes_list)
+    if not stitched_img:
+        raise HTTPException(status_code=400, detail="Failed to stitch images")
+
+    # 保存拼接后的图片
+    uploads_dir = os.path.join(STATIC_DIR, "uploads")
+    os.makedirs(uploads_dir, exist_ok=True)
+
+    filename = f"{uuid.uuid4()}.jpg"
+    file_path = os.path.join(uploads_dir, filename)
+
+    # 保存为 JPEG
+    stitched_img.save(file_path, format="JPEG", quality=92)
+
+    relative_path = f"static/uploads/{filename}"
+    return {"filename": filename, "path": relative_path}
+
+
+@app.post("/api/questions/studio", response_model=schemas.Question)
+async def create_question_from_studio(
+    question_image_path: str = Form(...),
+    answer_image_path: str = Form(...),
+    curriculum: str = Form(None),
+    subject: str = Form(None),
+    subject_code: str = Form(None),
+    year: int = Form(None),
+    season: str = Form(None),
+    paper: str = Form(None),
+    question_number: str = Form(None),
+    difficulty: str = Form("Medium"),
+    question_type: str = Form(None),
+    topic: str = Form(None),
+    subtopic: str = Form(None),  # JSON array string, e.g., '["1.1 xxx", "1.2 yyy"]'
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """
+    从 Question Studio 创建题目（使用预上传的图片路径）
+    """
+    # 权限检查
+    if current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can create questions"
+        )
+
+    # 验证图片路径存在
+    q_full_path = os.path.join(settings.BASE_DIR, question_image_path)
+    a_full_path = os.path.join(settings.BASE_DIR, answer_image_path)
+
+    if not os.path.exists(q_full_path):
+        raise HTTPException(status_code=400, detail=f"Question image not found: {question_image_path}")
+    if not os.path.exists(a_full_path):
+        raise HTTPException(status_code=400, detail=f"Answer image not found: {answer_image_path}")
+
+    # 转换 difficulty 字符串为枚举
+    difficulty_enum = models.DifficultyLevel.Medium
+    if difficulty:
+        try:
+            difficulty_enum = models.DifficultyLevel(difficulty)
+        except ValueError:
+            pass  # 使用默认值
+
+    # 创建题目数据
+    question_data = schemas.QuestionCreate(
+        curriculum=curriculum or "CIE",
+        subject=subject,
+        subject_code=subject_code,
+        year=year,
+        season=season,
+        paper=paper,
+        question_number=question_number,
+        difficulty=difficulty_enum,
+        question_type=question_type,
+        topic=topic,
+        subtopic=subtopic  # 直接传递 JSON 字符串
+    )
+
+    # 创建题目
+    return crud.create_question(
+        db=db,
+        question=question_data,
+        question_image_path=question_image_path,
+        answer_image_path=answer_image_path,
+        source_filename="studio_manual"
+    )
+
+
 # --- ZIP Ingestion API ---
 
-@app.post("/api/v1/ingest/zip")
-async def ingest_zip_file(
+@app.post("/api/upload")
+async def upload_zip_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: models.User = Depends(auth.get_current_user)
 ):
     """
-    Upload and process a ZIP file containing ExamSlicer output
-    Only admins can upload
+    上传并处理 ExamSlicer 生成的 ZIP 包
+
+    处理流程:
+    1. 接收 ZIP 文件
+    2. 解压并读取 config.json 和各题目 JSON
+    3. 校验 Topic/Subtopic 是否在 Syllabus 中存在
+    4. 保存图片到 static/uploads 目录
+    5. 写入数据库
+    6. 返回处理结果
+
+    响应格式:
+    {
+        "success": true,
+        "processed_count": 15,
+        "skipped_count": 2,
+        "errors": [
+            {"question": "Q3", "reason": "Topic 'Algbra' not found in syllabus"},
+            {"question": "Q5", "reason": "Missing answer image"}
+        ]
+    }
     """
-    # Check permission
+    # 1. 权限检查：只有 admin 可以上传
     if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Only admins can upload ZIP files")
-    
-    # Validate file type
-    if not file.filename.endswith('.zip'):
-        raise HTTPException(status_code=400, detail="File must be a ZIP archive")
-    
-    # Save uploaded file temporarily
-    import tempfile
-    from .zip_ingest import ZipIngestor
-    
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only admins can upload ZIP files"
+        )
+
+    # 2. 文件类型检查
+    if not file.filename or not file.filename.endswith('.zip'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be a ZIP archive (.zip)"
+        )
+
+    # 3. 保存上传的文件到临时目录
     temp_zip = None
     try:
-        # Create temporary file with proper cleanup
         with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as temp_file:
             temp_zip = temp_file.name
-            # Read and write in chunks to handle large files
+            # 分块写入，支持大文件
             shutil.copyfileobj(file.file, temp_file)
-        
-        print(f"\n{'='*60}")
-        print(f"📦 ZIP Upload: {file.filename}")
-        print(f"👤 Uploaded by: {current_user.username}")
-        print(f"{'='*60}")
-        
-        # Process the ZIP file
-        ingestor = ZipIngestor()
-        result = ingestor.ingest_zip(temp_zip)
-        
-        print(f"\n📊 INGESTION RESULTS")
-        print(f"{'='*60}")
-        print(f"✅ Successfully created: {result['stats']['created']}")
-        print(f"🏷️  New tags created:    {result['stats']['tags_created']}")
-        print(f"❌ Errors:              {result['stats']['errors']}")
-        print(f"{'='*60}\n")
-        
-        return {
-            "status": "success",
-            "message": f"Successfully imported {result['stats']['created']} questions",
-            "stats": result['stats']
-        }
-        
-    except Exception as e:
-        import traceback
-        error_msg = str(e)
-        traceback_str = traceback.format_exc()
-        
-        print(f"\n❌ ERROR during ZIP ingestion:")
-        print(traceback_str)
-        
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to process ZIP file: {error_msg}"
+
+        logger.info(f"ZIP Upload: {file.filename} by {current_user.username}")
+
+        # 4. 处理 ZIP 文件
+        ingestor = ZipIngestor(db=db)
+        result = ingestor.ingest_zip(
+            zip_file_path=temp_zip,
+            original_filename=file.filename
         )
-    
+
+        # 5. 记录日志
+        logger.info(
+            f"Ingestion complete - "
+            f"Processed: {result['processed_count']}, "
+            f"Skipped: {result['skipped_count']}, "
+            f"Errors: {len(result['errors'])}"
+        )
+
+        # 6. 返回结果
+        return {
+            "success": result['success'],
+            "processed_count": result['processed_count'],
+            "skipped_count": result['skipped_count'],
+            "errors": result['errors']
+        }
+
+    except Exception as e:
+        error_msg = str(e)
+        logger.error(f"ZIP upload failed: {error_msg}", exc_info=True)
+
+        # 返回错误响应（而不是抛出异常，以便前端能获取部分结果）
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "processed_count": 0,
+                "skipped_count": 0,
+                "errors": [{"question": "GLOBAL", "reason": error_msg}]
+            }
+        )
+
     finally:
-        # Cleanup temporary ZIP file
+        # 清理临时文件
         if temp_zip and os.path.exists(temp_zip):
             try:
                 os.unlink(temp_zip)
-            except:
+            except Exception:
                 pass
 
 
-from fastapi import Response
-from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
-from . import pdf_engine
+# 保留旧的端点路径以兼容
+@app.post("/api/v1/ingest/zip")
+async def ingest_zip_file_legacy(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.get_current_user)
+):
+    """Legacy endpoint - redirects to /api/upload"""
+    return await upload_zip_file(file=file, db=db, current_user=current_user)
+
+
+# =============================================================================
+# Smart Generator API - 智能组卷
+# =============================================================================
+
+@app.post("/api/generator/smart", response_model=schemas.SmartGeneratorResponse)
+async def generate_smart_exam(
+    request: schemas.SmartGeneratorRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    智能组卷 API
+
+    根据权重配置生成试卷：
+    - topic_weights: 各知识点权重
+    - difficulty_ratio: 难度比例 (Easy/Medium/Hard)
+
+    算法流程:
+    1. Bucket Allocation - 根据权重分配每个 Subtopic 的题目数量
+    2. Difficulty Mapping - 按比例分配难度
+    3. Query & Fallback - 查询数据库，优先保证知识点匹配
+    """
+    try:
+        # 转换 schema 到 dataclass
+        topic_weights = [
+            TopicWeight(
+                topic=tw.topic,
+                weight=tw.weight,
+                subtopics=[
+                    SubtopicWeight(subtopic=sw.subtopic, weight=sw.weight)
+                    for sw in tw.subtopics
+                ]
+            )
+            for tw in request.topic_weights
+        ]
+
+        generator_request = GeneratorRequest(
+            subject_code=request.subject_code,
+            paper=request.paper,
+            total_questions=request.total_questions,
+            topic_weights=topic_weights,
+            difficulty_ratio=DifficultyRatio(
+                easy=request.difficulty_ratio.Easy,
+                medium=request.difficulty_ratio.Medium,
+                hard=request.difficulty_ratio.Hard
+            )
+        )
+
+        # 执行生成
+        generator = SmartExamGenerator(db)
+        result = generator.generate(generator_request)
+
+        # 转换响应
+        return schemas.SmartGeneratorResponse(
+            success=result.slots_filled > 0,
+            question_ids=result.question_ids,
+            slots_filled=result.slots_filled,
+            slots_requested=result.slots_requested,
+            fallback_used=result.fallback_used,
+            unfilled_slots=[
+                schemas.UnfilledSlot(**slot) for slot in result.unfilled_slots
+            ],
+            message=f"生成完成: {result.slots_filled}/{result.slots_requested} 道题"
+        )
+
+    except Exception as e:
+        logger.error(f"Smart generator error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/generator/reroll", response_model=schemas.RerollResponse)
+async def reroll_question_endpoint(
+    request: schemas.RerollRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    单题重新抽取 API
+
+    在保持相同 topic/subtopic 的前提下，替换为另一道题
+    """
+    try:
+        generator = SmartExamGenerator(db)
+        new_id = generator.reroll_question(
+            question_id=request.question_id,
+            subject_code=request.subject_code,
+            paper=request.paper,
+            topic=request.topic,
+            subtopic=request.subtopic,
+            exclude_ids=request.exclude_ids
+        )
+
+        if new_id:
+            return schemas.RerollResponse(
+                success=True,
+                new_question_id=new_id,
+                message="重新抽取成功"
+            )
+        else:
+            return schemas.RerollResponse(
+                success=False,
+                new_question_id=None,
+                message="没有可替换的题目"
+            )
+
+    except Exception as e:
+        logger.error(f"Reroll error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# =============================================================================
+# Worksheet API - 试卷生成
+# =============================================================================
 
 @app.post("/worksheet/generate")
 async def generate_worksheet_endpoint(request: schemas.WorksheetGenerateRequest, db: Session = Depends(get_db)):
@@ -423,7 +818,6 @@ async def prepare_download_link(file_id: str, name: str = "worksheet.pdf"):
     shutil.copy2(src_path, dest_path)
     
     # Return URL to the download endpoint (not static files)
-    from urllib.parse import quote
     url_name = quote(name)
     download_url = f"/download-file/{file_id.replace('.pdf', '')}/{url_name}"
     
@@ -446,4 +840,6 @@ async def download_file(uuid: str, filename: str):
     )
 
 # Mount frontend at root (must be last to avoid shadowing API routes)
-app.mount("/", StaticFiles(directory=os.path.join(BASE_DIR, "../frontend"), html=True), name="frontend")
+# 开发模式: 前端由 Vite dev server (port 3000) 单独服务，注释掉下面这行
+# 生产模式: 取消注释并指向 frontend/dist 目录
+# app.mount("/", StaticFiles(directory=str(settings.BASE_DIR / "../frontend/dist"), html=True), name="frontend")
