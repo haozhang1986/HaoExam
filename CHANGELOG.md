@@ -2,6 +2,127 @@
 
 All notable changes to HaoExam will be documented in this file.
 
+## [v2.2-beta] - 2025-01-08
+
+### Added - User Authentication & RBAC System
+
+Complete role-based access control system with three permission levels:
+
+#### Backend Authentication (`backend/app/auth.py`)
+- **RBAC Role System**: Admin / Teacher / Student permission levels
+- `require_role()` decorator for endpoint protection
+- Pre-defined role dependencies: `require_admin`, `require_teacher_or_admin`
+- Configuration externalized to `config.py` (SECRET_KEY, JWT_ALGORITHM)
+
+#### Backend User Initialization (`backend/app/main.py`)
+- **Default User Creation**: Auto-create test accounts on startup
+  - `admin` / `admin123` (Admin - full access)
+  - `teacher` / `teacher123` (Teacher - Gallery + Generator)
+  - `student` / `student123` (Student - Gallery only)
+- Generator endpoints now require Teacher+ permission
+
+#### Frontend Auth Store (`frontend/src/store/authStore.ts`)
+- Zustand store with `persist` middleware (localStorage)
+- Login/logout operations with API integration
+- Role-based permission checking: `hasRole()`, `canAccess()`
+- Global login modal state management
+
+#### Frontend Components
+- **LoginModal** (`components/LoginModal.tsx`)
+  - Pixel-art styled login form
+  - Supports modal and fullscreen modes
+  - Error display with retro styling
+
+- **ProtectedRoute** (`components/ProtectedRoute.tsx`)
+  - Route guard component with role checking
+  - "ACCESS DENIED" screen for unauthenticated users
+  - "FORBIDDEN" screen for insufficient permissions
+
+- **Navbar** (`components/Navbar.tsx`)
+  - Global navigation bar component
+  - User status display (username + role)
+  - Login/Logout buttons
+
+#### Homepage Updates (`frontend/src/App.tsx`)
+- Feature cards show lock overlay for unauthorized access
+- Click locked card → open login modal
+- Status bar shows login state: "LOGGED IN" / "GUEST"
+- Search bar functional → redirects to Gallery with keyword
+
+### Added - Keyword Search
+
+- **Gallery Page**: New keyword search input filter
+- **Homepage**: Search box redirects to `/gallery?keyword=xxx`
+- **Backend**: Added `keyword` parameter to `/questions/` endpoint
+- URL parameter synchronization for bookmarkable searches
+
+### Added - Question Drag & Drop Reorder
+
+- **GeneratedResults**: Drag-and-drop question reordering in generator
+- `reorderQuestions()` action in generatorStore
+- Visual feedback during drag operations
+
+### Improved - Database Models (`backend/app/models.py`)
+
+Complete model refactoring with detailed documentation:
+
+| Field | Change | Description |
+|-------|--------|-------------|
+| `source_filename` | NEW | Track origin file for batch delete |
+| `subject_code` | NEW | Subject code: "9709", "9702" |
+| `question_index` | NEW | Numeric sorting index |
+| `answer_text` | NEW | MCQ text answer: "A", "B", "C", "D" |
+| `Tag.paper` | REMOVED | Simplified tag model |
+| `Tag.subject` | REMOVED | Tags now universal |
+| `Tag.color` | NEW | Tag color code |
+
+### Improved - PDF Generation (`backend/app/pdf_engine.py`)
+
+- **Fixed**: Large images no longer overflow pages
+- **Added**: Question labels with ID and number
+- **Added**: "--- Answer ---" separator line styling
+- **Improved**: Page break logic for tall images
+- **Improved**: Logging with proper logger instead of print
+
+### Improved - Generator Store Performance (`frontend/src/store/generatorStore.ts`)
+
+- **Shallow Selectors**: Optimized re-renders with `useShallow`
+  - `useTopicMixerStore()` - TopicMixer only
+  - `useDifficultyStore()` - DifficultyEqualizer only
+  - `useGeneratedResultsStore()` - Results only
+  - `useExamSetupStore()` - Setup panel only
+- `normalizeSubtopicWeights(topic)` - Normalize single topic's subtopics
+- `reorderQuestions(from, to)` - Drag-drop support
+
+### Improved - Generator Page Validation
+
+- Frontend pre-validation before API call:
+  - Topic weights must sum to 100%
+  - Difficulty ratio must sum to 100%
+  - Clear error messages with fix suggestions
+
+### Changed - Route Permissions
+
+| Route | v2.1 | v2.2 |
+|-------|------|------|
+| `/gallery` | Public | Public |
+| `/generator` | Public | Teacher + Admin |
+| `/studio` | Public | Admin only |
+| `/admin/upload` | Public | Admin only |
+
+### Removed - Legacy Files
+
+Cleaned up deprecated frontend files:
+- `frontend/app.js` (2081 lines)
+- `frontend/style.css` (913 lines)
+- `frontend/multi-select.js`
+- `frontend/zip-upload.js`
+- `frontend/debug.html`
+- `frontend/haoexam_logo.png`
+- `backend/syllabus/*.json` (moved to static config)
+
+---
+
 ## [v2.1-beta] - 2025-01-05
 
 ### Added - Smart Exam Generator System

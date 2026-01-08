@@ -6,8 +6,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import ImagePasteBox from '../components/ImagePasteBox'
 import MultiSelectFilter from '../components/MultiSelectFilter'
+import Navbar from '../components/Navbar'
+import { useAuthStore } from '../store/authStore'
 import {
-  login,
   fetchQuestionByIdDirect,
   createStudioQuestion,
   updateQuestion,
@@ -31,12 +32,8 @@ const DIFFICULTY_OPTIONS = ['Easy', 'Medium', 'Hard']
 const CURRICULUM_OPTIONS = ['CIE', 'Edexcel', 'AP']
 
 export default function StudioPage() {
-  // ==================== 认证状态 ====================
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [loginError, setLoginError] = useState<string | null>(null)
-  const [loginLoading, setLoginLoading] = useState(false)
+  // 从全局 store 获取 token
+  const { token } = useAuthStore()
 
   // ==================== 模式和题目状态 ====================
   const [mode, setMode] = useState<Mode>('create')
@@ -79,55 +76,6 @@ export default function StudioPage() {
   // ==================== 保存状态 ====================
   const [saving, setSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-
-  // ==================== 初始化检查登录状态 ====================
-  useEffect(() => {
-    const token = localStorage.getItem('auth_token')
-    const role = localStorage.getItem('auth_role')
-    const savedUsername = localStorage.getItem('auth_username')
-
-    if (token && role === 'admin') {
-      setIsLoggedIn(true)
-      setUsername(savedUsername || '')
-    }
-  }, [])
-
-  // ==================== 登录处理 ====================
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginLoading(true)
-    setLoginError(null)
-
-    try {
-      const response = await login(username, password)
-
-      if (response.role !== 'admin') {
-        setLoginError('ADMIN ACCESS REQUIRED')
-        return
-      }
-
-      localStorage.setItem('auth_token', response.access_token)
-      localStorage.setItem('auth_role', response.role)
-      localStorage.setItem('auth_username', username)
-
-      setIsLoggedIn(true)
-    } catch (err) {
-      console.error('Login failed:', err)
-      setLoginError('INVALID CREDENTIALS')
-    } finally {
-      setLoginLoading(false)
-    }
-  }
-
-  // ==================== 登出处理 ====================
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_role')
-    localStorage.removeItem('auth_username')
-    setIsLoggedIn(false)
-    setUsername('')
-    setPassword('')
-  }
 
   // ==================== 级联更新：Subject 变化 ====================
   useEffect(() => {
@@ -304,8 +252,6 @@ export default function StudioPage() {
     setSaving(true)
     setSaveMessage(null)
 
-    const token = localStorage.getItem('auth_token') || ''
-
     try {
       if (mode === 'edit' && questionId) {
         const updateData = {
@@ -323,7 +269,7 @@ export default function StudioPage() {
           answer_text: answerMode === 'text' ? answerText : null,
         }
 
-        await updateQuestion(questionId, updateData, token)
+        await updateQuestion(questionId, updateData, token || '')
         setSaveMessage({ type: 'success', text: `Q#${questionId} UPDATED!` })
       } else {
         const payload: StudioQuestionPayload = {
@@ -341,7 +287,7 @@ export default function StudioPage() {
           difficulty,
         }
 
-        const newQuestion = await createStudioQuestion(payload, token)
+        const newQuestion = await createStudioQuestion(payload, token || '')
         setSaveMessage({ type: 'success', text: `CREATED Q#${newQuestion.id}` })
 
         setMode('edit')
@@ -356,104 +302,11 @@ export default function StudioPage() {
     }
   }
 
-  // ==================== 登录界面 - 像素风格 ====================
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-pixel-bg flex items-center justify-center p-4">
-        <div className="pixel-card w-full max-w-md shadow-pixel-lg">
-          <div className="pixel-card-header bg-pixel-yellow">
-            <h1 className="font-pixel text-2xl text-pixel-dark">STUDIO LOGIN</h1>
-          </div>
-          <div className="p-6">
-            <p className="font-pixel text-sm text-pixel-gray-600 mb-6 text-center">
-              ADMIN ACCESS REQUIRED
-            </p>
-
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block font-pixel text-sm text-pixel-dark mb-1">
-                  USERNAME
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={e => setUsername(e.target.value)}
-                  className="pixel-input"
-                  placeholder="admin"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block font-pixel text-sm text-pixel-dark mb-1">
-                  PASSWORD
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="pixel-input"
-                  placeholder="********"
-                  required
-                />
-              </div>
-
-              {loginError && (
-                <div className="font-pixel text-sm text-pixel-red border-2 border-pixel-red bg-red-50 px-3 py-2">
-                  <i className="fa-solid fa-exclamation-triangle mr-2"></i>
-                  {loginError}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loginLoading}
-                className="pixel-btn-primary w-full"
-              >
-                {loginLoading ? 'LOADING...' : '[ LOGIN ]'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <Link to="/" className="font-pixel text-pixel-primary hover:text-pixel-secondary">
-                [ BACK TO HOME ]
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   // ==================== 主界面 - 像素风格 ====================
   return (
     <div className="min-h-screen bg-pixel-bg">
-      {/* 像素风导航栏 */}
-      <nav className="pixel-navbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <i className="fa-solid fa-gamepad text-2xl"></i>
-                <span className="font-pixel text-2xl tracking-widest">HAOEXAM</span>
-              </Link>
-              <span className="font-pixel text-lg text-pixel-gray-500">/</span>
-              <span className="font-pixel text-lg">STUDIO</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="font-pixel text-sm text-pixel-gray-600">
-                {username} (ADMIN)
-              </span>
-              <button
-                onClick={handleLogout}
-                className="font-pixel text-sm bg-pixel-dark text-white px-3 py-1 border-2 border-pixel-dark hover:bg-pixel-red transition-colors"
-              >
-                [ LOGOUT ]
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* 全局导航栏 */}
+      <Navbar currentPage="STUDIO" />
 
       {/* 主内容区域 */}
       <main className="max-w-7xl mx-auto px-4 py-6 pt-24 pb-20">

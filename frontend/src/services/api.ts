@@ -117,15 +117,19 @@ interface PrepareDownloadResponse {
  * 生成 PDF 试卷
  * @param questionIds 题目 ID 列表
  * @param includeAnswers 是否包含答案
+ * @param token 认证令牌
  * @returns 生成的文件 ID
  */
 export async function generatePdf(
   questionIds: number[],
-  includeAnswers: boolean = false
+  includeAnswers: boolean = false,
+  token?: string
 ): Promise<string> {
   const response = await api.post<GeneratePdfResponse>('/worksheet/generate', {
     question_ids: questionIds,
     include_answers: includeAnswers,
+  }, {
+    headers: token ? { 'Authorization': `Bearer ${token}` } : {},
   })
   return response.data.file_id
 }
@@ -151,17 +155,19 @@ export async function prepareDownload(
  * 触发 PDF 下载
  * @param questionIds 题目 ID 列表
  * @param includeAnswers 是否包含答案
+ * @param token 认证令牌
  * @param filename 自定义文件名
  */
 export async function downloadPdf(
   questionIds: number[],
   includeAnswers: boolean = false,
+  token?: string,
   filename?: string
 ): Promise<void> {
   console.log('[PDF] Starting download process...', { questionIds, includeAnswers })
 
-  // 1. 生成 PDF
-  const fileId = await generatePdf(questionIds, includeAnswers)
+  // 1. 生成 PDF（需要认证）
+  const fileId = await generatePdf(questionIds, includeAnswers, token)
   console.log('[PDF] Generated file ID:', fileId)
 
   // 2. 生成友好的文件名
@@ -422,14 +428,20 @@ export interface SmartGeneratorResponse {
 }
 
 /**
- * 智能组卷 - 生成试卷
+ * 智能组卷 - 生成试卷 (需要 Teacher 或 Admin 权限)
  */
 export async function generateSmartExam(
-  payload: SmartGeneratorPayload
+  payload: SmartGeneratorPayload,
+  token: string
 ): Promise<SmartGeneratorResponse> {
   const response = await api.post<SmartGeneratorResponse>(
     '/api/generator/smart',
-    payload
+    payload,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
   )
   return response.data
 }
@@ -450,10 +462,21 @@ export interface RerollResponse {
 }
 
 /**
- * 智能组卷 - 重新抽取单题
+ * 智能组卷 - 重新抽取单题 (需要 Teacher 或 Admin 权限)
  */
-export async function rerollQuestion(payload: RerollPayload): Promise<RerollResponse> {
-  const response = await api.post<RerollResponse>('/api/generator/reroll', payload)
+export async function rerollQuestion(
+  payload: RerollPayload,
+  token: string
+): Promise<RerollResponse> {
+  const response = await api.post<RerollResponse>(
+    '/api/generator/reroll',
+    payload,
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    }
+  )
   return response.data
 }
 

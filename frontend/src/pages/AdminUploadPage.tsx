@@ -1,40 +1,20 @@
 import { useState, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { uploadZip, login, type UploadResult, type UploadError } from '../services/api'
+import { uploadZip, type UploadResult, type UploadError } from '../services/api'
+import { useAuthStore } from '../store/authStore'
+import Navbar from '../components/Navbar'
 
 // ============================================================================
 // 类型定义
 // ============================================================================
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error'
 
-interface AuthState {
-  isLoggedIn: boolean
-  token: string | null
-  username: string | null
-  role: string | null
-}
-
 // ============================================================================
 // AdminUploadPage 组件 - 像素风格
 // ============================================================================
 export default function AdminUploadPage() {
-  // 认证状态
-  const [auth, setAuth] = useState<AuthState>(() => {
-    const token = localStorage.getItem('auth_token')
-    const username = localStorage.getItem('auth_username')
-    const role = localStorage.getItem('auth_role')
-    return {
-      isLoggedIn: !!token,
-      token,
-      username,
-      role,
-    }
-  })
-
-  // 登录表单
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' })
-  const [loginError, setLoginError] = useState<string | null>(null)
-  const [loginLoading, setLoginLoading] = useState(false)
+  // 从全局 store 获取 token
+  const { token } = useAuthStore()
 
   // 上传状态
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle')
@@ -44,47 +24,6 @@ export default function AdminUploadPage() {
   const [dragActive, setDragActive] = useState(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // --------------------------------------------------------------------------
-  // 登录处理
-  // --------------------------------------------------------------------------
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoginError(null)
-    setLoginLoading(true)
-
-    try {
-      const result = await login(loginForm.username, loginForm.password)
-
-      if (result.role !== 'admin') {
-        setLoginError('ADMIN ACCESS REQUIRED')
-        return
-      }
-
-      localStorage.setItem('auth_token', result.access_token)
-      localStorage.setItem('auth_username', loginForm.username)
-      localStorage.setItem('auth_role', result.role)
-
-      setAuth({
-        isLoggedIn: true,
-        token: result.access_token,
-        username: loginForm.username,
-        role: result.role,
-      })
-    } catch (error) {
-      setLoginError('INVALID CREDENTIALS')
-      console.error('Login failed:', error)
-    } finally {
-      setLoginLoading(false)
-    }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_username')
-    localStorage.removeItem('auth_role')
-    setAuth({ isLoggedIn: false, token: null, username: null, role: null })
-  }
 
   // --------------------------------------------------------------------------
   // 文件拖拽处理
@@ -130,14 +69,14 @@ export default function AdminUploadPage() {
   // 上传处理
   // --------------------------------------------------------------------------
   const handleUpload = async () => {
-    if (!selectedFile || !auth.token) return
+    if (!selectedFile || !token) return
 
     setUploadStatus('uploading')
     setUploadResult(null)
     setUploadProgress(0)
 
     try {
-      const result = await uploadZip(selectedFile, auth.token, (progress) => {
+      const result = await uploadZip(selectedFile, token, (progress) => {
         setUploadProgress(progress)
       })
       setUploadResult(result)
@@ -164,103 +103,12 @@ export default function AdminUploadPage() {
   }
 
   // --------------------------------------------------------------------------
-  // 登录界面 - 像素风格
-  // --------------------------------------------------------------------------
-  if (!auth.isLoggedIn) {
-    return (
-      <div className="min-h-screen bg-pixel-bg flex items-center justify-center p-4">
-        <div className="pixel-card w-full max-w-md shadow-pixel-lg">
-          <div className="pixel-card-header bg-pixel-green">
-            <h1 className="font-pixel text-2xl text-white">ADMIN LOGIN</h1>
-          </div>
-          <div className="p-6">
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label className="block font-pixel text-sm text-pixel-dark mb-1">
-                  USERNAME
-                </label>
-                <input
-                  type="text"
-                  value={loginForm.username}
-                  onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })}
-                  className="pixel-input"
-                  placeholder="admin"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block font-pixel text-sm text-pixel-dark mb-1">
-                  PASSWORD
-                </label>
-                <input
-                  type="password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
-                  className="pixel-input"
-                  placeholder="********"
-                  required
-                />
-              </div>
-
-              {loginError && (
-                <div className="font-pixel text-sm text-pixel-red border-2 border-pixel-red bg-red-50 px-3 py-2">
-                  <i className="fa-solid fa-exclamation-triangle mr-2"></i>
-                  {loginError}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loginLoading}
-                className="pixel-btn-primary w-full"
-              >
-                {loginLoading ? 'LOADING...' : '[ LOGIN ]'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <Link to="/" className="font-pixel text-pixel-primary hover:text-pixel-secondary">
-                [ BACK TO HOME ]
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  // --------------------------------------------------------------------------
   // 上传界面 - 像素风格
   // --------------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-pixel-bg">
-      {/* 像素风导航栏 */}
-      <nav className="pixel-navbar">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <i className="fa-solid fa-gamepad text-2xl"></i>
-                <span className="font-pixel text-2xl tracking-widest">HAOEXAM</span>
-              </Link>
-              <span className="font-pixel text-lg text-pixel-gray-500">/</span>
-              <span className="font-pixel text-lg">UPLOAD</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="font-pixel text-sm text-pixel-gray-600">
-                {auth.username} ({auth.role?.toUpperCase()})
-              </span>
-              <button
-                onClick={handleLogout}
-                className="font-pixel text-sm bg-pixel-dark text-white px-3 py-1 border-2 border-pixel-dark hover:bg-pixel-red transition-colors"
-              >
-                [ LOGOUT ]
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* 全局导航栏 */}
+      <Navbar currentPage="UPLOAD" />
 
       {/* 主内容区域 */}
       <main className="max-w-4xl mx-auto px-4 py-8 pt-24 pb-20">

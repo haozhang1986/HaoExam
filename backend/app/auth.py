@@ -1,16 +1,19 @@
 from datetime import datetime, timedelta
-from typing import Optional
-from jose import JWTError, jwt
-from passlib.context import CryptContext
+from typing import List, Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from . import models, schemas, crud, database
 
-# Config
-SECRET_KEY = "haozhang-secret-key-change-this-in-production"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 week expiration for convenience
+from . import models, schemas, crud, database
+from .config import settings
+
+# 从配置中获取安全参数
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.JWT_ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -75,3 +78,34 @@ async def get_current_user_optional(token: Optional[str] = Depends(oauth2_scheme
 
 async def get_current_active_user(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+
+# =============================================================================
+# 角色权限验证 (RBAC)
+# =============================================================================
+
+def require_role(allowed_roles: List[str]):
+    """
+    创建一个依赖，检查当前用户是否具有所需角色
+
+    用法:
+        @app.post("/admin-only")
+        async def admin_endpoint(user: models.User = Depends(require_role(['admin']))):
+            ...
+    """
+    async def role_checker(
+        current_user: models.User = Depends(get_current_user)
+    ) -> models.User:
+        if current_user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"权限不足。需要角色: {', '.join(allowed_roles)}"
+            )
+        return current_user
+    return role_checker
+
+
+# 预定义的角色依赖（方便使用）
+require_admin = require_role(['admin'])
+require_teacher_or_admin = require_role(['teacher', 'admin'])
+require_any_user = require_role(['student', 'teacher', 'admin'])

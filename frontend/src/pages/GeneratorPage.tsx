@@ -7,9 +7,9 @@
  * - Area C: 生成与预览 (GeneratedResults)
  */
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
 import { useGeneratorStore } from '../store/generatorStore'
 import { usePaperStore } from '../store/paperStore'
+import { useAuthStore } from '../store/authStore'
 import {
   getPaperCodes,
   getTopicsByPaper,
@@ -24,6 +24,7 @@ import {
 import DifficultyEqualizer from '../components/generator/DifficultyEqualizer'
 import TopicMixer from '../components/generator/TopicMixer'
 import GeneratedResults from '../components/generator/GeneratedResults'
+import Navbar from '../components/Navbar'
 
 // 可用科目列表
 const availableSubjects = ['9709', '9701', '9702', '9708']
@@ -46,9 +47,11 @@ export default function GeneratorPage() {
     setIsGenerating,
     setError,
     replaceQuestion,
+    reorderQuestions,
   } = useGeneratorStore()
 
   const { addQuestions } = usePaperStore()
+  const { token } = useAuthStore()
 
   const [availablePapers, setAvailablePapers] = useState<string[]>([])
   const [rerollingId, setRerollingId] = useState<number | null>(null)
@@ -78,6 +81,24 @@ export default function GeneratorPage() {
       return
     }
 
+    // 前端预验证: 检查 Topic 权重总和
+    const totalTopicWeight = topicWeights.reduce((sum, tw) => sum + tw.weight, 0)
+    if (totalTopicWeight === 0) {
+      setError('Topic weights cannot all be 0%. Please set at least one topic weight.')
+      return
+    }
+    if (totalTopicWeight !== 100) {
+      setError(`Topic weights must sum to 100% (currently ${totalTopicWeight}%). Use FIX button to normalize.`)
+      return
+    }
+
+    // 前端预验证: 检查难度比例总和
+    const totalDifficulty = difficultyRatio.Easy + difficultyRatio.Medium + difficultyRatio.Hard
+    if (totalDifficulty !== 100) {
+      setError(`Difficulty ratio must sum to 100% (currently ${totalDifficulty}%).`)
+      return
+    }
+
     setIsGenerating(true)
     setError(null)
 
@@ -97,7 +118,7 @@ export default function GeneratorPage() {
         difficulty_ratio: difficultyRatio,
       }
 
-      const result = await generateSmartExam(payload)
+      const result = await generateSmartExam(payload, token || '')
 
       if (result.success && result.question_ids.length > 0) {
         // 获取完整的题目数据
@@ -134,6 +155,7 @@ export default function GeneratorPage() {
     totalQuestions,
     topicWeights,
     difficultyRatio,
+    token,
     setIsGenerating,
     setError,
     setGeneratedQuestions,
@@ -154,7 +176,7 @@ export default function GeneratorPage() {
           topic,
           subtopic,
           exclude_ids: excludeIds,
-        })
+        }, token || '')
 
         if (result.success && result.new_question_id) {
           const [newQuestion] = await fetchQuestionsByIds([result.new_question_id])
@@ -171,7 +193,7 @@ export default function GeneratorPage() {
         setRerollingId(null)
       }
     },
-    [subjectCode, paper, generatedQuestions, replaceQuestion, setError]
+    [subjectCode, paper, generatedQuestions, replaceQuestion, setError, token]
   )
 
   // 添加所有到购物车
@@ -182,34 +204,8 @@ export default function GeneratorPage() {
 
   return (
     <div className="min-h-screen bg-pixel-bg">
-      {/* Navbar */}
-      <nav className="pixel-navbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-4">
-              <Link
-                to="/"
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-              >
-                <i className="fa-solid fa-gamepad text-2xl"></i>
-                <span className="font-pixel text-2xl tracking-widest">HAOEXAM</span>
-              </Link>
-              <span className="font-pixel text-lg text-pixel-gray-500">/</span>
-              <span className="font-pixel text-lg text-pixel-primary">
-                <i className="fa-solid fa-wand-magic-sparkles mr-2"></i>
-                SMART GENERATOR
-              </span>
-            </div>
-            <Link
-              to="/gallery"
-              className="font-pixel text-sm bg-pixel-gray-100 px-3 py-1 border-2 border-pixel-dark hover:bg-pixel-gray-200 transition-colors"
-            >
-              <i className="fa-solid fa-arrow-left mr-2"></i>
-              BACK TO GALLERY
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* Global Navbar */}
+      <Navbar currentPage="GENERATOR" />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-6 pt-24 pb-20">
@@ -352,6 +348,7 @@ export default function GeneratorPage() {
               questions={generatedQuestions}
               onReroll={handleReroll}
               onAddAllToCart={handleAddAllToCart}
+              onReorder={reorderQuestions}
               isRerolling={rerollingId}
             />
           </div>

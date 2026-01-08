@@ -63,6 +63,58 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+
+# =============================================================================
+# 初始化默认用户账户
+# =============================================================================
+def init_default_users():
+    """
+    创建内置测试账户（如果不存在）
+
+    账户列表：
+    - admin / admin123     (管理员 - 所有权限)
+    - teacher / teacher123 (教师 - Gallery + Generator)
+    - student / student123 (学生 - 仅 Gallery)
+    """
+    db = SessionLocal()
+    try:
+        default_users = [
+            {"username": "admin", "password": "admin123", "role": "admin"},
+            {"username": "teacher", "password": "teacher123", "role": "teacher"},
+            {"username": "student", "password": "student123", "role": "student"},
+        ]
+
+        for user_data in default_users:
+            # 检查用户是否已存在
+            existing_user = db.query(models.User).filter(
+                models.User.username == user_data["username"]
+            ).first()
+
+            if not existing_user:
+                # 创建新用户
+                hashed_password = auth.get_password_hash(user_data["password"])
+                new_user = models.User(
+                    username=user_data["username"],
+                    hashed_password=hashed_password,
+                    role=user_data["role"]
+                )
+                db.add(new_user)
+                logger.info(f"Created default user: {user_data['username']} ({user_data['role']})")
+
+        db.commit()
+    except Exception as e:
+        logger.error(f"Failed to create default users: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
+# 应用启动时初始化默认用户
+@app.on_event("startup")
+async def startup_event():
+    init_default_users()
+
+
 # CORS Configuration - 从配置文件读取
 app.add_middleware(
     CORSMiddleware,
@@ -317,6 +369,8 @@ def read_questions(
     topic: List[str] = Query(None),  # Multi-select support
     subtopic: List[str] = Query(None),  # Multi-select support
     question_type: str = None,
+    # 关键词搜索
+    keyword: str = None,
     db: Session = Depends(get_db),
     current_user: Optional[models.User] = Depends(auth.get_current_user_optional)
 ):
@@ -335,7 +389,8 @@ def read_questions(
         paper_number=paper_number,
         topic=topic,
         subtopic=subtopic,
-        question_type=question_type
+        question_type=question_type,
+        keyword=keyword
     )
     
     # RBAC: Student (or Guest) cannot see answers
@@ -665,10 +720,11 @@ async def ingest_zip_file_legacy(
 @app.post("/api/generator/smart", response_model=schemas.SmartGeneratorResponse)
 async def generate_smart_exam(
     request: schemas.SmartGeneratorRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.require_teacher_or_admin)
 ):
     """
-    智能组卷 API
+    智能组卷 API (需要 Teacher 或 Admin 权限)
 
     根据权重配置生成试卷：
     - topic_weights: 各知识点权重
@@ -730,10 +786,11 @@ async def generate_smart_exam(
 @app.post("/api/generator/reroll", response_model=schemas.RerollResponse)
 async def reroll_question_endpoint(
     request: schemas.RerollRequest,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.require_teacher_or_admin)
 ):
     """
-    单题重新抽取 API
+    单题重新抽取 API (需要 Teacher 或 Admin 权限)
 
     在保持相同 topic/subtopic 的前提下，替换为另一道题
     """
@@ -771,7 +828,11 @@ async def reroll_question_endpoint(
 # =============================================================================
 
 @app.post("/worksheet/generate")
-async def generate_worksheet_endpoint(request: schemas.WorksheetGenerateRequest, db: Session = Depends(get_db)):
+async def generate_worksheet_endpoint(
+    request: schemas.WorksheetGenerateRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(auth.require_teacher_or_admin)
+):
     # 1. Fetch questions
     questions = db.query(models.Question).filter(models.Question.id.in_(request.question_ids)).all()
     

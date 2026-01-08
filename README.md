@@ -4,7 +4,7 @@
 
 > **English** | [中文](#中文文档)
 
-[![Version](https://img.shields.io/badge/version-2.1--beta-blue.svg)](https://github.com/yourusername/HaoExam)
+[![Version](https://img.shields.io/badge/version-2.2--beta-blue.svg)](https://github.com/yourusername/HaoExam)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-18-61DAFB.svg)](https://reactjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo.com/)
@@ -17,7 +17,9 @@ HaoExam is a modern, full-stack exam question bank management system designed fo
 
 ### Key Highlights
 
+- **User Authentication & RBAC** - Role-based access control (Admin/Teacher/Student)
 - **Smart Exam Generator** - AI-powered exam paper creation with topic/difficulty weighting
+- **Keyword Search** - Fast full-text search across questions
 - **Multi-Select Filtering** - Advanced cascading filters for precise question discovery
 - **ZIP Batch Import** - Bulk upload questions from ExamSlicer format packages
 - **PDF Worksheet Generation** - Create printable exam papers with one click
@@ -148,11 +150,11 @@ npm run dev
 
 ### Default Credentials
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | admin123 |
-| Teacher | teacher1 | teacher123 |
-| Student | student1 | student123 |
+| Role | Username | Password | Access |
+|------|----------|----------|--------|
+| Admin | admin | admin123 | All features |
+| Teacher | teacher | teacher123 | Gallery + Generator |
+| Student | student | student123 | Gallery only |
 
 ---
 
@@ -242,6 +244,7 @@ HaoExam/
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| **v2.2-beta** | 2025-01-08 | **User Auth & RBAC, Keyword Search, PDF Fixes** |
 | v2.1-beta | 2025-01-05 | Smart Exam Generator |
 | v2.0-beta | 2024-12-17 | Multi-Select Filter System |
 | v1.1-alpha | 2024-12-15 | PDF fixes, testing framework |
@@ -277,7 +280,9 @@ HaoExam 是一个现代化的全栈考试题库管理系统，专为 A-Level 和
 
 ### 核心亮点
 
+- **用户认证与权限系统** - 角色权限控制（管理员/教师/学生）
 - **智能组卷系统** - 基于知识点/难度权重的智能试卷生成
+- **关键词搜索** - 快速全文检索题目
 - **多选筛选器** - 高级级联过滤，精准查找题目
 - **ZIP 批量导入** - 支持 ExamSlicer 格式的批量上传
 - **PDF 试卷生成** - 一键创建可打印的考试试卷
@@ -408,11 +413,11 @@ npm run dev
 
 ### 默认账户
 
-| 角色 | 用户名 | 密码 |
-|------|--------|------|
-| 管理员 | admin | admin123 |
-| 教师 | teacher1 | teacher123 |
-| 学生 | student1 | student123 |
+| 角色 | 用户名 | 密码 | 权限 |
+|------|--------|------|------|
+| 管理员 | admin | admin123 | 所有功能 |
+| 教师 | teacher | teacher123 | Gallery + Generator |
+| 学生 | student | student123 | 仅 Gallery |
 
 ---
 
@@ -431,6 +436,7 @@ npm run dev
 
 | 版本 | 日期 | 更新内容 |
 |------|------|----------|
+| **v2.2-beta** | 2025-01-08 | **用户认证、权限系统、关键词搜索、PDF 修复** |
 | v2.1-beta | 2025-01-05 | 智能组卷系统 |
 | v2.0-beta | 2024-12-17 | 多选筛选系统 |
 | v1.1-alpha | 2024-12-15 | PDF 修复、测试框架 |
@@ -464,6 +470,6 @@ Hao Zhang
 
 ---
 
-*最后更新: 2025-01-05*
+*最后更新: 2025-01-08*
 
 **准备好开始了吗？运行上面的快速开始命令吧！**

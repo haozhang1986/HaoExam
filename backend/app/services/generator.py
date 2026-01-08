@@ -13,7 +13,7 @@ import random
 import logging
 
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 
 from ..models import Question, DifficultyLevel
 
@@ -191,11 +191,28 @@ class SmartExamGenerator:
                     slots.append((topic_weight.topic, sw.subtopic))
 
         # 确保总数正确（处理可能的舍入误差）
+        # 修复: 使用权重最高的 topic 来吸收舍入误差，而不是第一个 topic
         while len(slots) < total and request.topic_weights:
-            # 补充到第一个有权重的 topic/subtopic
-            tw = request.topic_weights[0]
-            subtopic = tw.subtopics[0].subtopic if tw.subtopics else ""
-            slots.append((tw.topic, subtopic))
+            remaining = total - len(slots)
+            # 找到权重最大的 topic（非零权重优先）
+            non_zero_topics = [tw for tw in request.topic_weights if tw.weight > 0]
+            if non_zero_topics:
+                target = max(non_zero_topics, key=lambda tw: tw.weight)
+            else:
+                # 如果所有权重都是0，使用第一个
+                target = request.topic_weights[0]
+
+            # 选择该 topic 下权重最高的 subtopic
+            if target.subtopics:
+                non_zero_subtopics = [sw for sw in target.subtopics if sw.weight > 0]
+                if non_zero_subtopics:
+                    subtopic = max(non_zero_subtopics, key=lambda sw: sw.weight).subtopic
+                else:
+                    subtopic = target.subtopics[0].subtopic
+            else:
+                subtopic = ""
+
+            slots.extend([(target.topic, subtopic)] * remaining)
 
         while len(slots) > total:
             slots.pop()
@@ -225,18 +242,34 @@ class SmartExamGenerator:
         if n == 0:
             return []
 
+        # 修复: 先归一化难度比例，防止输入不合法 (如 100/100/0 或总和 != 100)
+        total_ratio = max(1, ratio.easy + ratio.medium + ratio.hard)  # 防止除零
+
+        # 归一化后的百分比
+        easy_pct = ratio.easy * 100 / total_ratio
+        hard_pct = ratio.hard * 100 / total_ratio
+        # medium_pct = ratio.medium * 100 / total_ratio  # 用于参考
+
         # 计算各难度数量
-        easy_count = round(n * ratio.easy / 100)
-        hard_count = round(n * ratio.hard / 100)
+        easy_count = round(n * easy_pct / 100)
+        hard_count = round(n * hard_pct / 100)
         medium_count = n - easy_count - hard_count
 
-        # 确保不为负
+        # 确保不为负（处理舍入误差导致的溢出）
         if medium_count < 0:
-            # 如果 easy + hard 超过了总数，按比例缩减
-            total_eh = easy_count + hard_count
-            easy_count = round(n * easy_count / total_eh)
-            hard_count = n - easy_count
             medium_count = 0
+            overflow = easy_count + hard_count - n
+            if overflow > 0:
+                # 从较大的桶中减去溢出量
+                if easy_count >= hard_count:
+                    easy_count -= overflow
+                else:
+                    hard_count -= overflow
+
+        # 最终安全检查
+        easy_count = max(0, easy_count)
+        hard_count = max(0, hard_count)
+        medium_count = max(0, medium_count)
 
         # 构建难度列表
         difficulties = (
@@ -425,12 +458,10 @@ class SmartExamGenerator:
         if difficulty:
             query = query.filter(Question.difficulty == difficulty)
 
-        # 获取所有匹配结果并随机选一个
-        questions = query.all()
-        if questions:
-            return random.choice(questions)
-
-        return None
+        # 优化: 使用 DB 层随机排序 + LIMIT 1，避免加载全部数据到内存
+        # func.random() 适用于 SQLite，PostgreSQL 也支持
+        question = query.order_by(func.random()).limit(1).first()
+        return question
 
     # =========================================================================
     # Reroll - 单题重新抽取
@@ -492,8 +523,9 @@ class SmartExamGenerator:
                 )
             )
 
-        questions = query.all()
-        if questions:
-            return random.choice(questions).id
+        # 优化: 使用 DB 层随机排序 + LIMIT 1
+        question = query.order_by(func.random()).limit(1).first()
+        if question:
+            return question.id
 
         return None

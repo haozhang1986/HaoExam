@@ -4,3 +4,6 @@ sqlalchemy
 python-multipart
 Pillow
 reportlab
+python-dotenv
+python-jose[cryptography]
+passlib

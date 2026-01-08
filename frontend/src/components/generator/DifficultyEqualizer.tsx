@@ -3,8 +3,9 @@
  *
  * 音响 EQ 风格的三联动滑块，控制 Easy/Medium/Hard 比例
  * 总和始终保持 100%
+ * 使用 shallow 选择器优化性能
  */
-import { useGeneratorStore } from '../../store/generatorStore'
+import { useDifficultyStore } from '../../store/generatorStore'
 
 const difficulties = [
   {
@@ -31,7 +32,7 @@ const difficulties = [
 ]
 
 export default function DifficultyEqualizer() {
-  const { difficultyRatio, setDifficultyRatio } = useGeneratorStore()
+  const { difficultyRatio, setDifficultyRatio } = useDifficultyStore()
 
   return (
     <div className="pixel-card">

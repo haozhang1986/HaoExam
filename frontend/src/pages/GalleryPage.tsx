@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import type { Question, QuestionQueryParams, FilterOptions } from '../types/question'
 import { fetchQuestions, fetchFilterOptions } from '../services/api'
 import QuestionGrid from '../components/QuestionGrid'
 import MultiSelectFilter from '../components/MultiSelectFilter'
+import Navbar from '../components/Navbar'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import {
   getPaperCodes,
@@ -13,6 +14,9 @@ import {
 } from '../utils/syllabus'
 
 export default function GalleryPage() {
+  // ========== URL 参数 ==========
+  const [searchParams, setSearchParams] = useSearchParams()
+
   // ========== 筛选选项状态 ==========
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     curriculums: [],
@@ -28,6 +32,9 @@ export default function GalleryPage() {
   const [subject, setSubject] = useState<string>('')
   const [paper, setPaper] = useState<string>('')
   const [difficulty, setDifficulty] = useState<string>('')
+
+  // ========== 关键词搜索状态 ==========
+  const [keyword, setKeyword] = useState<string>(() => searchParams.get('keyword') || '')
 
   // ========== 多选筛选状态 ==========
   const [selectedTopics, setSelectedTopics] = useState<string[]>([])
@@ -45,8 +52,9 @@ export default function GalleryPage() {
     if (difficulty) params.difficulty = difficulty
     if (selectedTopics.length > 0) params.topic = selectedTopics
     if (selectedSubtopics.length > 0) params.subtopic = selectedSubtopics
+    if (keyword) params.keyword = keyword
     return params
-  }, [curriculum, subject, paper, difficulty, selectedTopics, selectedSubtopics])
+  }, [curriculum, subject, paper, difficulty, selectedTopics, selectedSubtopics, keyword])
 
   // ========== 无限滚动 ==========
   const fetchQuestionsWithFilters = useCallback(
@@ -134,7 +142,7 @@ export default function GalleryPage() {
   // 注意: curriculum 从级联依赖中移除，现在主要使用 subject 作为起点
   useEffect(() => {
     resetInfiniteScroll()
-  }, [curriculum, subject, paper, difficulty, selectedTopics, selectedSubtopics, resetInfiniteScroll])
+  }, [curriculum, subject, paper, difficulty, selectedTopics, selectedSubtopics, keyword, resetInfiniteScroll])
 
   // ========== 清除所有筛选 ==========
   const clearFilters = () => {
@@ -144,11 +152,25 @@ export default function GalleryPage() {
     setDifficulty('')
     setSelectedTopics([])
     setSelectedSubtopics([])
+    setKeyword('')
+    // 清除 URL 参数
+    setSearchParams({})
   }
 
   // ========== 点击题目 ==========
   const handleQuestionClick = (question: Question) => {
     console.log('Question clicked:', question)
+  }
+
+  // ========== 关键词搜索处理 ==========
+  const handleKeywordChange = (value: string) => {
+    setKeyword(value)
+    // 更新 URL 参数
+    if (value) {
+      setSearchParams({ keyword: value })
+    } else {
+      setSearchParams({})
+    }
   }
 
   // ========== 筛选侧边栏 - 像素风格 ==========
@@ -165,6 +187,20 @@ export default function GalleryPage() {
       </div>
 
       <div className="p-4 space-y-4">
+        {/* 0. 关键词搜索 */}
+        <div>
+          <label className="block font-pixel text-sm text-pixel-dark mb-1">
+            <i className="fa-solid fa-search mr-1"></i> KEYWORD
+          </label>
+          <input
+            type="text"
+            value={keyword}
+            onChange={(e) => handleKeywordChange(e.target.value)}
+            placeholder="Search..."
+            className="pixel-input w-full"
+          />
+        </div>
+
         {/* 1. 课程体系 (单选) */}
         <FilterSelect
           label="CURRICULUM"
@@ -224,34 +260,8 @@ export default function GalleryPage() {
 
   return (
     <div className="min-h-screen bg-pixel-bg">
-      {/* 像素风导航栏 */}
-      <nav className="pixel-navbar">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center gap-4">
-              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                <i className="fa-solid fa-gamepad text-2xl"></i>
-                <span className="font-pixel text-2xl tracking-widest">HAOEXAM</span>
-              </Link>
-              <span className="font-pixel text-lg text-pixel-gray-500">/</span>
-              <span className="font-pixel text-lg">GALLERY</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="font-pixel text-sm text-pixel-gray-600">
-                {loading ? 'LOADING...' : `${questions.length} ITEMS${hasMore ? '+' : ''}`}
-              </span>
-              {/* 移动端筛选按钮 */}
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden pixel-btn text-sm py-1 px-3"
-              >
-                <i className="fa-solid fa-filter mr-2"></i>
-                FILTER
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* 全局导航栏 */}
+      <Navbar currentPage="GALLERY" />
 
       {/* 主内容区域 */}
       <main className="max-w-7xl mx-auto px-4 py-6 pt-24 pb-20">

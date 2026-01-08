@@ -2,9 +2,10 @@
  * TopicMixer - 知识点混合器组件
  *
  * 手风琴结构，支持 Topic 和 Subtopic 两级权重调节
+ * 使用 shallow 选择器优化性能
  */
 import { useState, useRef, useEffect } from 'react'
-import { useGeneratorStore } from '../../store/generatorStore'
+import { useTopicMixerStore } from '../../store/generatorStore'
 
 export default function TopicMixer() {
   const {
@@ -14,7 +15,8 @@ export default function TopicMixer() {
     toggleTopicExpanded,
     resetTopicWeights,
     normalizeTopicWeights,
-  } = useGeneratorStore()
+    normalizeSubtopicWeights,
+  } = useTopicMixerStore()
 
   // 编辑状态: { type: 'topic' | 'subtopic', topic: string, subtopic?: string }
   const [editing, setEditing] = useState<{
@@ -183,10 +185,7 @@ export default function TopicMixer() {
                   max={100}
                   value={topic.weight}
                   onChange={(e) => setTopicWeight(topic.topic, parseInt(e.target.value))}
-                  className="w-24 h-3 appearance-none bg-pixel-gray-300 cursor-pointer"
-                  style={{
-                    background: `linear-gradient(to right, #6366f1 ${topic.weight}%, #d1d5db ${topic.weight}%)`,
-                  }}
+                  className="w-24 pixel-slider"
                 />
                 {/* Editable Weight Badge */}
                 {editing?.type === 'topic' && editing.topic === topic.topic ? (
@@ -216,6 +215,37 @@ export default function TopicMixer() {
             {/* Subtopic Rows - Level 2 */}
             {topic.expanded && topic.subtopics.length > 0 && (
               <div className="bg-pixel-gray-50 border-t-2 border-pixel-gray-200">
+                {/* Subtopic Total Header */}
+                {(() => {
+                  const subtopicTotal = topic.subtopics.reduce((sum, sw) => sum + sw.weight, 0)
+                  return (
+                    <div className="flex items-center justify-end gap-2 px-4 py-1 bg-pixel-gray-100 border-b border-pixel-gray-200">
+                      <span className="font-pixel text-[9px] text-pixel-gray-500">SUBTOPIC TOTAL:</span>
+                      {subtopicTotal !== 100 && subtopicTotal > 0 && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            normalizeSubtopicWeights(topic.topic)
+                          }}
+                          className="px-1.5 py-0.5 bg-pixel-yellow border border-pixel-dark font-pixel text-[8px] text-pixel-dark hover:bg-yellow-400 transition-colors"
+                          title="归一化 Subtopic 权重到 100%"
+                        >
+                          <i className="fa-solid fa-scale-balanced mr-0.5"></i>
+                          FIX
+                        </button>
+                      )}
+                      <span
+                        className={`font-pixel text-[10px] px-1.5 py-0.5 border border-pixel-dark ${
+                          subtopicTotal === 100
+                            ? 'bg-pixel-green text-white'
+                            : 'bg-pixel-yellow text-pixel-dark'
+                        }`}
+                      >
+                        {subtopicTotal}%
+                      </span>
+                    </div>
+                  )
+                })()}
                 {topic.subtopics.map((subtopic, idx) => (
                   <div
                     key={subtopic.subtopic}
@@ -241,10 +271,7 @@ export default function TopicMixer() {
                         onChange={(e) =>
                           setSubtopicWeight(topic.topic, subtopic.subtopic, parseInt(e.target.value))
                         }
-                        className="w-20 h-2 appearance-none bg-pixel-gray-300 cursor-pointer"
-                        style={{
-                          background: `linear-gradient(to right, #3d6fb4 ${subtopic.weight}%, #d1d5db ${subtopic.weight}%)`,
-                        }}
+                        className="w-20 pixel-slider pixel-slider-secondary"
                       />
                       {/* Editable Subtopic Weight Badge */}
                       {editing?.type === 'subtopic' &&

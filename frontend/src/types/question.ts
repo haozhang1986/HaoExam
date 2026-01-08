@@ -40,6 +40,7 @@ export interface QuestionQueryParams {
   tag_name?: string
   id?: number
   question_type?: string
+  keyword?: string              // 关键词搜索
 }
 
 // 筛选选项接口 (用于下拉菜单)

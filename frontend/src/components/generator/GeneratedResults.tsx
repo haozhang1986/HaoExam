@@ -20,6 +20,7 @@ interface Props {
   questions: GeneratedQuestion[]
   onReroll: (id: number, topic: string, subtopic: string) => void
   onAddAllToCart: () => void
+  onReorder: (fromIndex: number, toIndex: number) => void
   isRerolling?: number | null // 正在 reroll 的题目 ID
 }
 
@@ -34,9 +35,45 @@ export default function GeneratedResults({
   questions,
   onReroll,
   onAddAllToCart,
+  onReorder,
   isRerolling,
 }: Props) {
   const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+
+  // Drag handlers
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', index.toString())
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (draggedIndex !== null && index !== draggedIndex) {
+      setDragOverIndex(index)
+    }
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (e: React.DragEvent, toIndex: number) => {
+    e.preventDefault()
+    if (draggedIndex !== null && draggedIndex !== toIndex) {
+      onReorder(draggedIndex, toIndex)
+    }
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
 
   // Lightbox Component
   const Lightbox = () => {
@@ -98,17 +135,32 @@ export default function GeneratedResults({
             {questions.map((gq, idx) => {
               const diffStyle = difficultyColors[gq.question?.difficulty || gq.difficulty] ||
                 difficultyColors.Medium
+              const isDragging = draggedIndex === idx
+              const isDragOver = dragOverIndex === idx
 
               return (
                 <div
                   key={gq.id}
-                  className={`relative border-4 border-pixel-dark bg-pixel-white overflow-hidden group ${
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  className={`relative border-4 bg-pixel-white overflow-hidden group cursor-grab active:cursor-grabbing transition-all duration-150 ${
                     isRerolling === gq.id ? 'opacity-50' : ''
+                  } ${isDragging ? 'opacity-40 scale-95 border-pixel-gray-300' : 'border-pixel-dark'} ${
+                    isDragOver ? 'border-pixel-primary border-dashed scale-105 shadow-pixel-lg' : ''
                   }`}
                 >
-                  {/* Question Number Badge */}
-                  <div className="absolute top-0 left-0 z-10 w-7 h-7 bg-pixel-dark text-white font-pixel text-xs flex items-center justify-center">
-                    {idx + 1}
+                  {/* Drag Handle + Question Number Badge */}
+                  <div className="absolute top-0 left-0 z-10 h-7 bg-pixel-dark text-white font-pixel text-xs flex items-center">
+                    <span className="w-6 h-7 flex items-center justify-center text-pixel-gray-400 hover:text-white">
+                      <i className="fa-solid fa-grip-vertical text-[10px]"></i>
+                    </span>
+                    <span className="w-5 h-7 flex items-center justify-center border-l border-pixel-gray-600">
+                      {idx + 1}
+                    </span>
                   </div>
 
                   {/* Difficulty Badge */}
@@ -193,8 +245,12 @@ export default function GeneratedResults({
               {questions.filter((q) => q.question).length} LOADED
             </span>
             <span>
+              <i className="fa-solid fa-grip-vertical mr-1"></i>
+              DRAG TO REORDER
+            </span>
+            <span>
               <i className="fa-solid fa-dice mr-1"></i>
-              CLICK DICE TO REROLL
+              DICE TO REROLL
             </span>
           </div>
         </div>

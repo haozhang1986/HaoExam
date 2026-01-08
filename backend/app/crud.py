@@ -53,6 +53,8 @@ def get_questions(
     # 兼容旧参数 (映射到新字段)
     month: Optional[str] = None,
     paper_number: Optional[str] = None,
+    # 关键词搜索
+    keyword: Optional[str] = None,
 ):
     """获取题目列表，支持多种筛选条件"""
 
@@ -90,6 +92,20 @@ def get_questions(
     # 数据溯源筛选
     if source_filename:
         query = query.filter(models.Question.source_filename == source_filename)
+
+    # 关键词搜索 (在多个字段中模糊匹配)
+    if keyword:
+        keyword_pattern = f"%{keyword}%"
+        query = query.filter(
+            or_(
+                models.Question.topic.ilike(keyword_pattern),
+                models.Question.subtopic.ilike(keyword_pattern),
+                models.Question.question_number.ilike(keyword_pattern),
+                models.Question.curriculum.ilike(keyword_pattern),
+                models.Question.subject.ilike(keyword_pattern),
+                models.Question.source_filename.ilike(keyword_pattern),
+            )
+        )
 
     # 知识点筛选 (支持多选)
     if topic:

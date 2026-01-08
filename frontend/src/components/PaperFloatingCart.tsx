@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePaperStore } from '../store/paperStore'
+import { useAuthStore } from '../store/authStore'
 import { downloadPdf } from '../services/api'
 
 export default function PaperFloatingCart() {
@@ -9,6 +10,7 @@ export default function PaperFloatingCart() {
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
   const { selectedQuestionIds, removeQuestion, clearAll } = usePaperStore()
+  const { token, isLoggedIn, openLoginModal } = useAuthStore()
 
   const count = selectedQuestionIds.length
 
@@ -16,11 +18,18 @@ export default function PaperFloatingCart() {
   const handleGeneratePDF = async () => {
     if (count === 0) return
 
+    // 检查登录状态
+    if (!isLoggedIn || !token) {
+      setStatus({ type: 'error', message: 'PLEASE LOGIN FIRST' })
+      openLoginModal()
+      return
+    }
+
     setIsGenerating(true)
     setStatus(null)
 
     try {
-      await downloadPdf(selectedQuestionIds, includeAnswers)
+      await downloadPdf(selectedQuestionIds, includeAnswers, token)
       setStatus({ type: 'success', message: 'DOWNLOAD STARTED!' })
     } catch (error) {
       console.error('PDF generation failed:', error)
